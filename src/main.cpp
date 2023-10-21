@@ -8,6 +8,7 @@
 class MyApp : public Application {
 private:
     Renderer2D m_renderer;
+    Entity* m_ball = nullptr;
     Entity* m_paddle = nullptr;
 
 public:
@@ -16,12 +17,7 @@ public:
             m_renderer.init();
 
             // Add Ball
-            Entity ball = m_renderer.create_circle();
-            // ball.set<Component::Position>(glm::vec3(0.5f, 0.0f, 0.0f));
-
-            // RenderObject::Circle ball = RenderObject::Circle();
-            // ball.set_position(glm::vec3(0.5, 0, 0));
-            // ball.set_velocity(glm::vec3(0, 0.5, 0));
+            m_ball = &m_renderer.create_circle();
 
             // Add Bricks
             int columns = 10, rows = 6;

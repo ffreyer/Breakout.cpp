@@ -1,6 +1,6 @@
 :: Note that this expects GLFW to be compiled already
 
-@ECHO ON
+@ECHO OFF
 SetLocal EnableDelayedExpansion
 
 ECHO "Building ${PWD}"
@@ -9,21 +9,17 @@ mkdir bin
 
 :: Get a list of all the .c and .cpp files.
 cd src
-SET cFilenames= 
-:: "dependencies/glad/src/gl.c"
+SET cFilenames="dependencies/glad/src/gl.c"
 FOR /R %%f in (*.cpp) do (
-    SET cFilenames=!cFilenames! "%%f"
-)
-FOR /R %%f in (*.c) do (
     SET cFilenames=!cFilenames! "%%f"
 )
 cd ..
 
-:: ECHO "Files:" $cFilenames
+ECHO "Files:" !cFilenames!
 
 SET assembly=main
-SET compilerFlags=-g 
-REM -Wall -Werror
+SET compilerFlags=-g -Wall
+:: Werror - this causes errors for included c files
 SET includeFlags=-Isrc -Idependencies/entt/src/entt -Idependencies/glad/include -Idependencies/glfw/include -Idependencies/glm -Idependencies/stb
 SET linkerDirs=-Ldependencies/glfw/lib
 SET linkerFlags=-lglfw3dll -lglew32 -lopengl32
@@ -35,7 +31,7 @@ ECHO "Building $assembly..."
 REM %defines% 
 
 
-ECHO "All assemblies built successfully."
+ECHO "Done."
 
 :: OK, let's try to actually understand this
 :: up to the for loop everything's easy enough

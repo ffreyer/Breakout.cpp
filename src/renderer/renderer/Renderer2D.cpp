@@ -5,7 +5,9 @@
 
 Renderer2D::Renderer2D() :
     m_camera(OrthographicCamera(-1.0f, 1.0f, -1.0f, 1.0f))
-{
+{}
+
+void Renderer2D::init() {
     // TODO: make sure these get intialized correctly
     m_camera.recalculate_projection();
     m_camera.recalculate_view();
@@ -49,17 +51,15 @@ Renderer2D::Renderer2D() :
     m_data.quad_shader->compile();
 
     m_data.quad_buffer = new QuadVertex[m_data.max_vertices];
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 }
 
 Renderer2D::~Renderer2D() {
     m_entities.clear();    
     free(m_data.circle_buffer);
-}
-
-void Renderer2D::init() {
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 }
 
 Entity& Renderer2D::create_circle() {

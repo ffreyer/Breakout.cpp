@@ -27,7 +27,8 @@ public:
             for (int i = 0; i < columns; i++) {
                 float x = (brick_scale.x + 0.01f) * (i + 0.5f) - 1.0f;
                 for (int j = 0; j < rows; j++) {
-                    float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 0.5f); // aspect rescaling only works on init
+                    // aspect rescaling only works on init
+                    float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 0.5f); 
                     m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
                 }
             }

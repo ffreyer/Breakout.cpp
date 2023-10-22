@@ -45,9 +45,9 @@ public:
         // Update Paddle
         // TODO: consider scales and window size
         double mx, my;
-        Component::Quad& quad = m_paddle->get<Component::Quad>();
+        Component::Position& pos = m_paddle->get<Component::Position>();
         glfwGetCursorPos(m_window->m_window, &mx, &my);
-        quad.position.x = glm::clamp((float) mx / 800.0f, 0.05f, 0.95f) * 2.0f - 1.0f;
+        pos.position.x = glm::clamp((float) mx / 800.0f, 0.05f, 0.95f) * 2.0f - 1.0f;
 
         // Render
         m_renderer.render();

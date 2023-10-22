@@ -68,9 +68,8 @@ Entity& Renderer2D::create_circle() {
     
     // TODO: Is there a better solution?
     // I wanna keep position free I think? maybe not?
-    entity.add<Component::Circle>(); 
+    entity.add<Component::Circle>(10.0f); 
     entity.add<Component::Position>(glm::vec3(0.0f, 0.0f, 0.0f));
-    entity.add<Component::Radius>(10.0f);
     // entity.add<Component::CameraData>();
 
     return entity;
@@ -84,7 +83,8 @@ Entity &Renderer2D::create_quad(glm::vec3 position, glm::vec2 size)
 {
     m_entities.emplace_back(m_registry);
     Entity& entity = m_entities.back();
-    entity.add<Component::Quad>(position, size); 
+    entity.add<Component::Quad>(size); 
+    entity.add<Component::Position>(position); 
     return entity;
 }
 
@@ -101,12 +101,7 @@ void Renderer2D::begin() {
 
 void Renderer2D::render() {
     // TODO: some setup?
-    auto view = m_registry.view<
-        Component::Circle,
-        Component::Position,
-        Component::Radius
-        // Component::CameraData
-    >();
+    auto view = m_registry.view<Component::Circle, Component::Position>();
 
     m_data.circle_vertex_array->bind();
     m_data.circle_shader->use();
@@ -115,10 +110,10 @@ void Renderer2D::render() {
     m_data.circle_shader->set_uniform("resolution", glm::vec2(800, 600));
 
     for (auto entity : view) {
+        Component::Circle& circle = m_registry.get<Component::Circle>(entity);
         Component::Position& pos = m_registry.get<Component::Position>(entity);
-        Component::Radius& radius = m_registry.get<Component::Radius>(entity);
 
-        m_data.circle_buffer[m_data.circle_index] = CircleData(pos, radius);
+        m_data.circle_buffer[m_data.circle_index] = CircleData(circle, pos);
         m_data.circle_index = m_data.circle_index + 1;
 
         if (m_data.circle_index == m_data.max_vertices)
@@ -135,19 +130,19 @@ void Renderer2D::render() {
     m_data.quad_shader->set_uniform("view", m_camera.m_view);
 
     for (auto entity : quad_view) {
-        Component::Quad& quad = m_registry.get<Component::Quad>(entity);
-        glm::vec3 pos = quad.position - 0.5f * glm::vec3(quad.size, 0.0f);
+        glm::vec2 size = m_registry.get<Component::Quad>(entity).size;
+        glm::vec3 pos = m_registry.get<Component::Position>(entity).position - 0.5f * glm::vec3(size, 0.0f);
 
         if (m_data.quad_index + 6 > m_data.max_vertices)
             render_quads();
 
         m_data.quad_buffer[m_data.quad_index]   = QuadVertex(pos);
-        m_data.quad_buffer[m_data.quad_index+1] = QuadVertex(pos + glm::vec3(quad.size.x, 0.0f, 0.0f));
-        m_data.quad_buffer[m_data.quad_index+2] = QuadVertex(pos + glm::vec3(0.0f, quad.size.y, 0.0f));
+        m_data.quad_buffer[m_data.quad_index+1] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f));
+        m_data.quad_buffer[m_data.quad_index+2] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f));
 
-        m_data.quad_buffer[m_data.quad_index+3] = QuadVertex(pos + glm::vec3(quad.size, 0.0f));
-        m_data.quad_buffer[m_data.quad_index+4] = QuadVertex(pos + glm::vec3(quad.size.x, 0.0f, 0.0f));
-        m_data.quad_buffer[m_data.quad_index+5] = QuadVertex(pos + glm::vec3(0.0f, quad.size.y, 0.0f));
+        m_data.quad_buffer[m_data.quad_index+3] = QuadVertex(pos + glm::vec3(size, 0.0f));
+        m_data.quad_buffer[m_data.quad_index+4] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f));
+        m_data.quad_buffer[m_data.quad_index+5] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f));
         
         m_data.quad_index = m_data.quad_index + 6;
     }

@@ -25,9 +25,9 @@ struct CircleData {
     float radius;
 
     CircleData() = default;
-    CircleData(Component::Position& p, Component::Radius& r) {
+    CircleData(Component::Circle& circle, Component::Position& p) {
         position = p.position;
-        radius = r.radius;
+        radius = circle.radius;
     }
 };
 

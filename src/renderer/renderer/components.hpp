@@ -4,6 +4,16 @@
 
 namespace Component {
 
+    // Geometries
+    struct Circle {
+        float radius;
+    };
+
+    struct Quad {
+        glm::vec2 size;
+    };
+
+    // Generic
     struct Position {
         glm::vec3 position;
     };
@@ -17,18 +27,6 @@ namespace Component {
 
     struct Color {
         glm::vec4 color;
-    };
-
-    struct Radius {
-        float radius;
-    };
-
-    struct Circle {};
-
-    // trying out something else here
-    struct Quad {
-        glm::vec3 position;
-        glm::vec2 size;
     };
 
 }

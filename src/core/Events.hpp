@@ -40,11 +40,11 @@ struct KeyEvent : AbstractEvent {
 struct WindowEvent : AbstractEvent { };
 
 struct WindowResizeEvent : WindowEvent {
-    glm::vec2 last_size;
-    glm::vec2 size;
+    glm::ivec2 last_size;
+    glm::ivec2 size;
 };
 
 struct WindowMoveEvent : WindowEvent {
-    glm::vec2 last_position;
-    glm::vec2 position;
+    glm::ivec2 last_position;
+    glm::ivec2 position;
 };

@@ -27,6 +27,10 @@ public:
     virtual void update(float delta_time) = 0;
     virtual void on_event(AbstractEvent& e) { return; }
 
+    glm::vec2 get_mouse_position()  { return m_window->get_mouse_position(); }
+    glm::ivec2 get_window_position() { return m_window->get_window_position(); }
+    glm::ivec2 get_window_size()     { return m_window->get_window_size(); }
+
 // private:
     // process_events();
 };

@@ -51,7 +51,6 @@ void Application::run() {
     }
 };
 
-
 bool Window::connect_events(Application* app) {
     m_app = app;
     if (m_window) {
@@ -120,7 +119,7 @@ bool Window::connect_events(Application* app) {
             WindowMoveEvent event;
             event.type = EventType::WindowMoved;
             event.last_position = win->m_window_position;
-            win->m_window_position = glm::vec2(x, y);
+            win->m_window_position = glm::ivec2(x, y);
             event.position = win->m_window_position;
 
             win->m_app->on_event(event);
@@ -132,7 +131,7 @@ bool Window::connect_events(Application* app) {
             WindowMoveEvent event;
             event.type = EventType::WindowMoved;
             event.last_position = win->m_window_size;
-            win->m_window_size = glm::vec2(x, y);
+            win->m_window_size = glm::ivec2(x, y);
             event.position = win->m_window_size;
 
             win->m_app->on_event(event);

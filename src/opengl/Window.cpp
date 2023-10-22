@@ -20,7 +20,7 @@ bool Window::init()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create Window
-    m_window = glfwCreateWindow(m_width, m_height, m_name.c_str(), NULL, NULL);
+    m_window = glfwCreateWindow(m_window_size.x, m_window_size.y, m_name.c_str(), NULL, NULL);
     if (m_window == nullptr) {
         std::cout << "Failed to create GLFW window!" << std::endl;
         glfwTerminate();
@@ -39,7 +39,7 @@ bool Window::init()
     }
 
     // set initial viewport
-    glViewport(0, 0, m_width, m_height);
+    glViewport(0, 0, m_window_size.x, m_window_size.y);
     // update on resize
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 
@@ -66,9 +66,18 @@ bool Window::should_close()
     return glfwWindowShouldClose(m_window);
 }
 
-glm::vec2 Window::get_sizef()
-{
-    return glm::vec2(m_width, m_height);
+glm::vec2 Window::get_mouse_position() {
+    double mx, my;
+    glfwGetCursorPos(m_window, &mx, &my);
+    return glm::vec2(mx, my);
+    // Or just this?
+    // return m_mouse_position;
+}
+glm::ivec2 Window::get_window_position() {
+    return m_window_position;
+}
+glm::ivec2 Window::get_window_size() {
+    return m_window_size;
 }
 
 void Window::set_vsync(bool active)

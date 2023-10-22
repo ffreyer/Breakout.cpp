@@ -11,18 +11,17 @@ class Application;
 class Window {
 private:
     std::string m_name;
-    int m_width, m_height;
     // For events
     Application* m_app = nullptr;
     glm::vec2 m_mouse_position  = glm::vec2(0.0f, 0.0f);
-    glm::vec2 m_window_position = glm::vec2(0.0f, 0.0f);
-    glm::vec2 m_window_size     = glm::vec2(0.0f, 0.0f);
+    glm::vec2 m_window_position = glm::ivec2(0, 0);
+    glm::vec2 m_window_size     = glm::ivec2(0, 0);
 
 public:
     GLFWwindow* m_window;
 
     Window(std::string name, int width, int height)
-        : m_name(name), m_width(width), m_height(height), m_window(nullptr)
+        : m_name(name), m_window_size(width, height), m_window(nullptr)
     {
     };
 
@@ -40,7 +39,9 @@ public:
 
     // getters
     bool should_close();
-    glm::vec2 get_sizef();
+    glm::vec2 get_mouse_position();
+    glm::ivec2 get_window_position();
+    glm::ivec2 get_window_size();
 
     // setters
     void set_vsync(bool active);

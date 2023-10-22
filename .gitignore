@@ -33,3 +33,6 @@
 *.ilk
 *.pdb
 bin/*
+
+# Other stuff
+TODO.md

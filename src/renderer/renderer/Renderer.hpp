@@ -7,10 +7,9 @@
 #include "entity.hpp"
 
 class Renderer {
-protected:
+public:
     entt::registry m_registry;
     std::vector<Entity> m_entities;
 
-public:
     virtual void render() = 0;
 };

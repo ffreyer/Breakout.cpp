@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include <glm/glm.hpp>
 
 namespace Component {
@@ -29,4 +31,8 @@ namespace Component {
         glm::vec4 color;
     };
 
+    struct Velocity {
+        glm::vec2 velocity;
+    };
+    
 }

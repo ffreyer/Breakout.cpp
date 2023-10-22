@@ -1,5 +1,6 @@
 
 #include "Renderer2D.hpp"
+#include "../physics/BoundingBox2D.hpp"
 
 #include <iostream>
 
@@ -65,11 +66,9 @@ Renderer2D::~Renderer2D() {
 Entity& Renderer2D::create_circle() {
     m_entities.emplace_back(m_registry);
     Entity& entity = m_entities.back();
-    
-    // TODO: Is there a better solution?
-    // I wanna keep position free I think? maybe not?
     entity.add<Component::Circle>(10.0f); 
     entity.add<Component::Position>(glm::vec3(0.0f, 0.0f, 0.0f));
+    entity.add<Component::BoundingBox2D>(-10.0f, -10.0f, 10.0f, 10.0f);
     // entity.add<Component::CameraData>();
 
     return entity;
@@ -85,6 +84,7 @@ Entity &Renderer2D::create_quad(glm::vec3 position, glm::vec2 size)
     Entity& entity = m_entities.back();
     entity.add<Component::Quad>(size); 
     entity.add<Component::Position>(position); 
+    entity.add<Component::BoundingBox2D>(glm::vec2(position), size);
     return entity;
 }
 
@@ -92,8 +92,6 @@ Entity &Renderer2D::create_quad(glm::vec3 position, glm::vec2 size)
 #include <glad/gl.h>
 
 void Renderer2D::begin() {
-    // TODO: do we do time stuff here?
-    // TODO: events?
     // TODO: camera recalculation?
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

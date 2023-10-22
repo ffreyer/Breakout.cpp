@@ -3,7 +3,9 @@
 #include <glm/glm.hpp>
 
 #include "renderer/renderer/Renderer2D.hpp"
+#include "renderer/physics.hpp"
 #include "core/Application.hpp"
+#include "core/print.hpp"
 
 class MyApp : public Application {
 private:
@@ -18,6 +20,7 @@ public:
 
             // Add Ball
             m_ball = &m_renderer.create_circle();
+            m_ball->add<Component::Velocity>(glm::vec2(0.0f, 0.5f));
 
             // Add Bricks
             int columns = 10, rows = 6;
@@ -39,11 +42,34 @@ public:
     }
 
     void update(float delta_time) override {
-        // Init frame
-        m_renderer.begin();
+        // Physics update (TODO: cleanup)
+        auto movers = m_renderer.m_registry.view<Component::Position, Component::Velocity>();
+        auto colliders = m_renderer.m_registry.view<Component::BoundingBox2D>();
+        for (auto entity : movers) {
+            Component::Position& c_pos = m_renderer.m_registry.get<Component::Position>(entity);
+            Component::Velocity& c_vel = m_renderer.m_registry.get<Component::Velocity>(entity);
+            glm::vec2 delta = delta_time * c_vel.velocity;
+            glm::vec3 new_pos = c_pos.position + glm::vec3(delta.x, delta.y, 0.0f);
+
+            for (auto collider : colliders) {
+                if (collider == entity)
+                    continue;
+                
+                Component::BoundingBox2D bbox = m_renderer.m_registry.get<Component::BoundingBox2D>(collider);
+                HitResult result = bbox.collision_parameter(c_pos.position, delta);
+                if (result.hit && (0.0 < result.parameter) && (result.parameter <= 1.0)) {
+                    new_pos = c_pos.position + glm::vec3(result.parameter * delta - 2 * (1 - result.parameter) * result.normal * abs(delta), 0.0f);
+                    c_vel.velocity = c_vel.velocity + 2.0f * result.normal * abs(c_vel.velocity);
+                    break;
+                }
+            }   
+            c_pos.position = new_pos;
+        }
 
         // Render
+        m_renderer.begin();
         m_renderer.render();
+        m_renderer.end();
     }
 
     void on_event(AbstractEvent& event) override {
@@ -61,8 +87,10 @@ public:
         else
             return;
 
+        Component::BoundingBox2D& bbox = m_paddle->get<Component::BoundingBox2D>();
         Component::Position& pos = m_paddle->get<Component::Position>();
         pos.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f;
+        bbox.translate_center_to(glm::vec2(pos.position));
     }
 };
 

@@ -32,7 +32,6 @@
 # Other compilation files
 *.ilk
 *.pdb
-bin/*
 
 # Other stuff
 TODO.md

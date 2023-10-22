@@ -38,19 +38,31 @@ public:
         }
     }
 
-    void update(float delta_time) {
+    void update(float delta_time) override {
         // Init frame
         m_renderer.begin();
 
-        // Update Paddle
-        // TODO: consider scales and window size
-        double mx, my;
-        Component::Position& pos = m_paddle->get<Component::Position>();
-        glfwGetCursorPos(m_window->m_window, &mx, &my);
-        pos.position.x = glm::clamp((float) mx / 800.0f, 0.05f, 0.95f) * 2.0f - 1.0f;
-
         // Render
         m_renderer.render();
+    }
+
+    void on_event(AbstractEvent& event) override {
+
+        // Update Paddle position
+        float x, w;
+        if (event.type == EventType::MouseMoved) {
+            x = static_cast<MouseMoveEvent&>(event).position.x;
+            w = (float) get_window_size().x;
+        }
+        else if (event.type == EventType::WindowResize) {
+            x = get_mouse_position().x;
+            w = (float) static_cast<WindowResizeEvent&>(event).size.x;
+        }
+        else
+            return;
+
+        Component::Position& pos = m_paddle->get<Component::Position>();
+        pos.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f;
     }
 };
 

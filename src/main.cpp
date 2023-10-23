@@ -13,6 +13,7 @@ private:
     Entity m_ball;
     Entity m_paddle;
     uint16_t m_score = 0;
+    bool m_paused = false;
 
 public:
     MyApp() {
@@ -23,6 +24,9 @@ public:
     }
 
     void update(float delta_time) override {
+        if (m_paused)
+            return;
+
         // Physics update (TODO: cleanup)
         {
             Component::Name& mover_name = m_ball.get<Component::Name>();
@@ -68,6 +72,15 @@ public:
             c_pos.position = new_pos;
         }
 
+        // Check gameover
+        {
+            Component::Position c_pos = m_ball.get<Component::Position>();
+            if (c_pos.position.y < -1.0f) {
+                std::cout << "Gameover" << std::endl;
+                m_paused = true;
+            }
+        }
+
         // Render
         m_renderer.begin();
         m_renderer.render();
@@ -89,6 +102,8 @@ public:
             KeyEvent& ke = static_cast<KeyEvent&>(event);
             if (ke.button == Key::R)
                 reset();
+            m_paused = false;
+
             return;
         }
         else

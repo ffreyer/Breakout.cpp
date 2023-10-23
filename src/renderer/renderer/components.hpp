@@ -1,6 +1,6 @@
 #pragma once
 
-#include <algorithm>
+#include <string>
 
 #include <glm/glm.hpp>
 
@@ -16,6 +16,10 @@ namespace Component {
     };
 
     // Generic
+    struct Name {
+        std::string name;
+    };
+
     struct Position {
         glm::vec3 position;
     };

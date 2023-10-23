@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <glm/glm.hpp>
 
 #include "Renderer.hpp"
@@ -70,9 +72,10 @@ public:
 
     void init();
 
-    Entity& create_circle();
-    Entity& create_quad();
-    Entity& create_quad(glm::vec3 position, glm::vec2 size);
+    Entity create_entity(std::string name);
+    Entity create_circle();
+    Entity create_quad();
+    Entity create_quad(glm::vec3 position, glm::vec2 size);
 
     void begin();
     void render();

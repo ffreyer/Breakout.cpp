@@ -8,6 +8,13 @@ Renderer2D::Renderer2D() :
     m_camera(OrthographicCamera(-1.0f, 1.0f, -1.0f, 1.0f))
 {}
 
+void debug_log(entt::registry& reg, entt::entity entity) {
+    std::cout << "Deleting entity";
+    std::string name = reg.get<Component::Name>(entity).name;
+    uint64_t id = reg.get<Component::ID>(entity).id;
+    std::cout << " " << name << " " << id << std::endl;
+}
+
 void Renderer2D::init() {
     // TODO: make sure these get intialized correctly
     m_camera.recalculate_projection();
@@ -53,6 +60,9 @@ void Renderer2D::init() {
 
     m_data.quad_buffer = new QuadVertex[m_data.max_vertices];
 
+    // TODO: debug
+    m_registry.on_destroy<entt::entity>().connect<&debug_log>();
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
@@ -63,9 +73,16 @@ Renderer2D::~Renderer2D() {
     free(m_data.circle_buffer);
 }
 
-Entity& Renderer2D::create_circle() {
-    m_entities.emplace_back(m_registry);
-    Entity& entity = m_entities.back();
+Entity Renderer2D::create_entity(std::string name) {
+    Entity entity = { m_registry, m_registry.create() };
+    m_entities.push_back(entity);
+    entity.add<Component::Name>(name);
+    return entity;
+}
+
+Entity Renderer2D::create_circle() {
+    Entity entity = create_entity("Circle Entity");
+
     entity.add<Component::Circle>(10.0f); 
     entity.add<Component::Position>(glm::vec3(0.0f, 0.0f, 0.0f));
     entity.add<Component::BoundingBox2D>(-10.0f, -10.0f, 10.0f, 10.0f);
@@ -74,17 +91,18 @@ Entity& Renderer2D::create_circle() {
     return entity;
 }
 
-Entity& Renderer2D::create_quad() {
+
+Entity Renderer2D::create_quad() {
     return create_quad(glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 1.0f));
 }
 
-Entity &Renderer2D::create_quad(glm::vec3 position, glm::vec2 size)
-{
-    m_entities.emplace_back(m_registry);
-    Entity& entity = m_entities.back();
+Entity Renderer2D::create_quad(glm::vec3 position, glm::vec2 size) {
+    Entity entity = create_entity("Quad Entity");
+    
     entity.add<Component::Quad>(size); 
     entity.add<Component::Position>(position); 
     entity.add<Component::BoundingBox2D>(glm::vec2(position), size);
+
     return entity;
 }
 
@@ -128,11 +146,11 @@ void Renderer2D::render() {
     m_data.quad_shader->set_uniform("view", m_camera.m_view);
 
     for (auto entity : quad_view) {
-        glm::vec2 size = m_registry.get<Component::Quad>(entity).size;
-        glm::vec3 pos = m_registry.get<Component::Position>(entity).position - 0.5f * glm::vec3(size, 0.0f);
-
         if (m_data.quad_index + 6 > m_data.max_vertices)
             render_quads();
+
+        glm::vec3 pos = m_registry.get<Component::Position>(entity).position;
+        glm::vec2 size = m_registry.get<Component::Quad>(entity).size;
 
         m_data.quad_buffer[m_data.quad_index]   = QuadVertex(pos);
         m_data.quad_buffer[m_data.quad_index+1] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f));

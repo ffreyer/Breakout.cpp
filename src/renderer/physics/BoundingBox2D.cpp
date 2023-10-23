@@ -21,6 +21,11 @@ void Component::BoundingBox2D::translate_lb_to(glm::vec2 p) {
     bottom = p.y;
 }
 
+void Component::BoundingBox2D::print() {
+    std::cout << "BBox(" << left << " .. " << right << 
+        ", " << bottom << " .. " << top << ")" << std::endl;
+}
+
 bool Component::BoundingBox2D::collides(BoundingBox2D& other) {
     return (left < other.right && other.left < right) && 
         (bottom < other.top && other.bottom < top);

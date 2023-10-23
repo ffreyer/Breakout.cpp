@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <glm/glm.hpp>
 
 struct HitResult {
@@ -45,6 +47,8 @@ namespace Component {
         glm::vec2 distance(glm::vec2 point);
 
         HitResult collision_parameter(glm::vec2 point, glm::vec2 dir);
+
+        void print();
     };
     
 }

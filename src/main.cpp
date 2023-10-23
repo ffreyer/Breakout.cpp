@@ -32,7 +32,8 @@ public:
                 for (int j = 0; j < rows; j++) {
                     // aspect rescaling only works on init
                     float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
-                    m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
+                    Entity e = m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
+                    e.add<Component::Destructable>();
                 }
             }
 
@@ -61,7 +62,8 @@ public:
             glm::vec3 new_pos = c_pos.position + glm::vec3(delta.x, delta.y, 0.0f);
 
             auto colliders = m_renderer.m_registry.view<Component::BoundingBox2D>();
-            for (auto collider : colliders) {
+
+            for (const auto collider : colliders) {
                 if (collider == m_ball.get_entity())
                     continue;
 
@@ -79,6 +81,8 @@ public:
                     // Paddle momentum transfer
                     if (collider == m_paddle.get_entity())
                         new_v = new_v + m_renderer.m_registry.get<Component::Velocity>(collider).velocity;
+                    else if (m_renderer.m_registry.all_of<Component::Destructable>(collider))
+                        m_renderer.m_registry.destroy(collider);
                     
                     new_pos = c_pos.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
                     c_vel.velocity = new_v;

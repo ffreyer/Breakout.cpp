@@ -39,4 +39,6 @@ namespace Component {
         glm::vec2 velocity;
     };
     
+    struct Destructable {
+    };
 }

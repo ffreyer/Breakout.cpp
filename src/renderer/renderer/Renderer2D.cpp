@@ -60,8 +60,8 @@ void Renderer2D::init() {
 
     m_data.quad_buffer = new QuadVertex[m_data.max_vertices];
 
-    // TODO: debug
-    m_registry.on_destroy<entt::entity>().connect<&debug_log>();
+    // TODO: this runs after destroy :(
+    // m_registry.on_destroy<entt::entity>().connect<&debug_log>();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);

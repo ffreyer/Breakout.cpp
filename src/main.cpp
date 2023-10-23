@@ -12,41 +12,13 @@ private:
     Renderer2D m_renderer;
     Entity m_ball;
     Entity m_paddle;
+    uint16_t m_score = 0;
 
 public:
     MyApp() {
         if (init("Test Window", 800, 600)) {
             m_renderer.init();
-
-            // Add Ball
-            m_ball = m_renderer.create_circle();
-            m_ball.add<Component::Velocity>(glm::vec2(0.1f, 0.5f));
-
-            // Add Bricks
-            int columns = 10, rows = 6;
-            float aspect = 600.0f / 800.0f;
-            glm::vec2 brick_scale = glm::vec2(0.19, 0.04);
-
-            for (int i = 0; i < columns; i++) {
-                float x = (brick_scale.x + 0.01f) * i - 0.995f;
-                for (int j = 0; j < rows; j++) {
-                    // aspect rescaling only works on init
-                    float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
-                    Entity e = m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
-                    e.add<Component::Destructable>();
-                }
-            }
-
-            // Add paddle
-            m_paddle = m_renderer.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
-            m_paddle.add<Component::Velocity>(glm::vec2(0.0f, 0.0f));
-
-            // Add wall colliders
-            Entity wall_l = m_renderer.create_entity("Wall left");
-            wall_l.add<Component::BoundingBox2D>(-2.0f, -1.0f, -2.0f, 2.0f);
-            Entity wall_r = m_renderer.create_entity("Wall right");
-            wall_r.add<Component::BoundingBox2D>( 1.0f,  2.0f, -2.0f, 2.0f);
-            m_renderer.create_entity("Wall top").add<Component::BoundingBox2D>(-2.0f, 2.0f, 1.0f, 2.0f);
+            reset();
         }
     }
 
@@ -81,8 +53,12 @@ public:
                     // Paddle momentum transfer
                     if (collider == m_paddle.get_entity())
                         new_v = new_v + m_renderer.m_registry.get<Component::Velocity>(collider).velocity;
-                    else if (m_renderer.m_registry.all_of<Component::Destructable>(collider))
+                    else if (m_renderer.m_registry.all_of<Component::Destructable>(collider)) {
+                        m_score++;
                         m_renderer.m_registry.destroy(collider);
+                        std::cout << "Destroyed Block. Score: " << m_score << std::endl;
+                        // new_v = 1.1f * new_v; // creates bugs and also too much
+                    }
                     
                     new_pos = c_pos.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
                     c_vel.velocity = new_v;
@@ -99,7 +75,6 @@ public:
     }
 
     void on_event(AbstractEvent& event) override {
-
         // Update Paddle position
         float x, w;
         if (event.type == EventType::MouseMoved) {
@@ -109,6 +84,12 @@ public:
         else if (event.type == EventType::WindowResize) {
             x = get_mouse_position().x;
             w = (float) static_cast<WindowResizeEvent&>(event).size.x;
+        }
+        else if (event.type == EventType::KeyReleased) {
+            KeyEvent& ke = static_cast<KeyEvent&>(event);
+            if (ke.button == Key::R)
+                reset();
+            return;
         }
         else
             return;
@@ -123,6 +104,41 @@ public:
         vel.velocity.x = 0.5 * (vel.velocity.x + (new_x - pos.position.x)); 
         pos.position.x = new_x;
         bbox.translate_lb_to(glm::vec2(pos.position));
+    }
+
+    void reset() {
+        m_score = 0;
+        m_renderer.reset();
+
+        // Add Ball
+        m_ball = m_renderer.create_circle();
+        m_ball.add<Component::Velocity>(glm::vec2(0.1f, 0.5f));
+
+        // Add Bricks
+        int columns = 10, rows = 6;
+        float aspect = 600.0f / 800.0f;
+        glm::vec2 brick_scale = glm::vec2(0.19, 0.04);
+
+        for (int i = 0; i < columns; i++) {
+            float x = (brick_scale.x + 0.01f) * i - 0.995f;
+            for (int j = 0; j < rows; j++) {
+                // aspect rescaling only works on init
+                float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
+                Entity e = m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
+                e.add<Component::Destructable>();
+            }
+        }
+
+        // Add paddle
+        m_paddle = m_renderer.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
+        m_paddle.add<Component::Velocity>(glm::vec2(0.0f, 0.0f));
+
+        // Add wall colliders
+        Entity wall_l = m_renderer.create_entity("Wall left");
+        wall_l.add<Component::BoundingBox2D>(-2.0f, -1.0f, -2.0f, 2.0f);
+        Entity wall_r = m_renderer.create_entity("Wall right");
+        wall_r.add<Component::BoundingBox2D>( 1.0f,  2.0f, -2.0f, 2.0f);
+        m_renderer.create_entity("Wall top").add<Component::BoundingBox2D>(-2.0f, 2.0f, 1.0f, 2.0f);
     }
 };
 

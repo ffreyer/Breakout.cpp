@@ -10,6 +10,16 @@ enum class EventType {
 	MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 };
 
+static const char* enum_to_string(EventType type) {
+	static const char* conversion[] = {
+		"None",
+		"WindowClose", "WindowResize", "WindowFocus", "WindowLostFocus", "WindowMoved",
+		"KeyPressed", "KeyReleased", "KeyTyped",
+		"MouseButtonPressed", "MouseButtonReleased", "MouseMoved", "MouseScrolled"
+	};
+	return conversion[(size_t) type];
+}
+
 namespace Mouse {
 
 enum : MouseCode {

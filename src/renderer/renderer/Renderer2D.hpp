@@ -71,6 +71,7 @@ public:
     ~Renderer2D();
 
     void init();
+    void reset();
 
     Entity create_entity(std::string name);
     Entity create_circle();

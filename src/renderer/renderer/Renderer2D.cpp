@@ -68,6 +68,11 @@ void Renderer2D::init() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 }
 
+void Renderer2D::reset() {
+    m_entities.clear();
+    m_registry.clear();
+}
+
 Renderer2D::~Renderer2D() {
     m_entities.clear();    
     free(m_data.circle_buffer);

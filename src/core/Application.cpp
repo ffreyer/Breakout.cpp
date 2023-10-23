@@ -64,9 +64,9 @@ bool Window::connect_events(Application* app) {
             event.type = EventType::None;
             event.button = key;
             event.mod = mods;
-            if (action == GLFW_KEY_DOWN)
+            if (action == GLFW_PRESS)
                 event.type = EventType::KeyPressed;
-            else if (action == GLFW_KEY_UP)
+            else if (action == GLFW_RELEASE)
                 event.type = EventType::KeyReleased;
 
             win->m_app->on_event(event);

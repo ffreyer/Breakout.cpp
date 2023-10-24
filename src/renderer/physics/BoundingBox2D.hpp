@@ -47,6 +47,8 @@ namespace Component {
         glm::vec2 distance(glm::vec2 point);
 
         HitResult collision_parameter(glm::vec2 point, glm::vec2 dir);
+        HitResult collision_parameter(glm::vec2 point, float radius, glm::vec2 dir);
+        HitResult collision_parameter(glm::vec2 point, glm::vec2 radius, glm::vec2 dir);
 
         void print();
     };

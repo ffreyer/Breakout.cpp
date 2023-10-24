@@ -33,7 +33,9 @@ public:
             Component::ID& mover_id     = m_ball.get<Component::ID>();
             Component::Position& c_pos  = m_ball.get<Component::Position>();
             Component::Velocity& c_vel  = m_ball.get<Component::Velocity>();
+            Component::Circle& c_circle = m_ball.get<Component::Circle>();
 
+            glm::vec2 radius = 2.0f * c_circle.radius / glm::vec2(m_window->get_window_size());
             glm::vec2 delta = delta_time * c_vel.velocity;
             glm::vec3 new_pos = c_pos.position + glm::vec3(delta.x, delta.y, 0.0f);
 
@@ -44,13 +46,14 @@ public:
                     continue;
 
                 Component::BoundingBox2D bbox = m_renderer.m_registry.get<Component::BoundingBox2D>(collider);
-                HitResult result = bbox.collision_parameter(c_pos.position, delta);
+                HitResult result = bbox.collision_parameter(c_pos.position, radius, delta);
 
                 if (result.hit && (0.0 <= result.parameter) && (result.parameter <= 1.0)) {
                     Component::Name& collider_name = m_renderer.m_registry.get<Component::Name>(collider);
                     Component::ID& collider_id = m_renderer.m_registry.get<Component::ID>(collider);
-                    std::cout << mover_name.name << " " << mover_id.id << " collided with " << 
-                        collider_name.name << " " << collider_id.id << std::endl;
+                    // std::cout << mover_name.name << " " << mover_id.id << " collided with " << 
+                        // collider_name.name << " " << collider_id.id << "  |  " << result.parameter <<
+                        // "(" << result.normal.x << ", " << result.normal.y << ")" << std::endl;
                     
                     glm::vec2 new_v = c_vel.velocity + 2.0f * result.normal * abs(c_vel.velocity);
                     
@@ -69,6 +72,7 @@ public:
                     break;
                 }
             }   
+            // std::cout << std::endl;
             c_pos.position = new_pos;
         }
 
@@ -143,6 +147,13 @@ public:
                 e.add<Component::Destructable>();
             }
         }
+        // {
+        //     int i = 5, j = 6;
+        //     float x = (brick_scale.x + 0.01f) * i - 0.995f;
+        //     float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
+        //     Entity e = m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
+        //     e.add<Component::Destructable>();
+        // }
 
         // Add paddle
         m_paddle = m_renderer.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);

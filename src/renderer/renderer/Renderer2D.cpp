@@ -65,6 +65,7 @@ void Renderer2D::init() {
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+    // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 }
 
@@ -121,27 +122,6 @@ void Renderer2D::begin() {
 }
 
 void Renderer2D::render() {
-    // TODO: some setup?
-    auto view = m_registry.view<Component::Circle, Component::Position>();
-
-    m_data.circle_vertex_array->bind();
-    m_data.circle_shader->use();
-    m_data.circle_shader->set_uniform("projection", m_camera.m_projection);
-    m_data.circle_shader->set_uniform("view", m_camera.m_view);
-    m_data.circle_shader->set_uniform("resolution", glm::vec2(800, 600));
-
-    for (auto entity : view) {
-        Component::Circle& circle = m_registry.get<Component::Circle>(entity);
-        Component::Position& pos = m_registry.get<Component::Position>(entity);
-
-        m_data.circle_buffer[m_data.circle_index] = CircleData(circle, pos);
-        m_data.circle_index = m_data.circle_index + 1;
-
-        if (m_data.circle_index == m_data.max_vertices)
-            render_circles();
-    }
-    render_circles();
-
     // and again for quads
     auto quad_view = m_registry.view<Component::Quad>();
 
@@ -168,6 +148,27 @@ void Renderer2D::render() {
         m_data.quad_index = m_data.quad_index + 6;
     }
     render_quads();
+
+    // TODO: some setup?
+    auto view = m_registry.view<Component::Circle, Component::Position>();
+
+    m_data.circle_vertex_array->bind();
+    m_data.circle_shader->use();
+    m_data.circle_shader->set_uniform("projection", m_camera.m_projection);
+    m_data.circle_shader->set_uniform("view", m_camera.m_view);
+    m_data.circle_shader->set_uniform("resolution", glm::vec2(800, 600));
+
+    for (auto entity : view) {
+        Component::Circle& circle = m_registry.get<Component::Circle>(entity);
+        Component::Position& pos = m_registry.get<Component::Position>(entity);
+
+        m_data.circle_buffer[m_data.circle_index] = CircleData(circle, pos);
+        m_data.circle_index = m_data.circle_index + 1;
+
+        if (m_data.circle_index == m_data.max_vertices)
+            render_circles();
+    }
+    render_circles();
 }
 
 void Renderer2D::end() {

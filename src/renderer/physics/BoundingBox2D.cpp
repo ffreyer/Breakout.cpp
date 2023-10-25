@@ -73,7 +73,7 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 point, glm::ve
 
     // inside (not left, right, above or below bbox)
     if (!b_left && !b_right && !b_below && !b_above)
-        return HitResult(point, glm::vec2(0.0f, 0.0f), 0.0f, true);
+        return HitResult(point, glm::normalize(-dir), 0.0f, true);
 
     glm::vec2 edge = glm::vec2(
         b_left * left    + b_right * right,
@@ -119,7 +119,7 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 point, float r
 
     // inside (not left, right, above or below bbox)
     if (!b_left && !b_right && !b_below && !b_above)
-        return HitResult(point, glm::vec2(0.0f, 0.0f), 0.0f, true);
+        return HitResult(point, glm::normalize(-dir), 0.0f, true);
 
 
     // line check
@@ -192,8 +192,9 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 point, glm::ve
     bool b_above = point.y > top;
 
     // inside (not left, right, above or below bbox)
-    if (!b_left && !b_right && !b_below && !b_above)
-        return HitResult(point, glm::vec2(0.0f, 0.0f), 0.0f, true);
+    if (!b_left && !b_right && !b_below && !b_above) {
+        return HitResult(point, glm::normalize(-dir), 0.0f, true);
+    }
 
 
     // line check

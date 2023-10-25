@@ -55,7 +55,7 @@ public:
                         // collider_name.name << " " << collider_id.id << "  |  " << result.parameter <<
                         // "(" << result.normal.x << ", " << result.normal.y << ")" << std::endl;
                     
-                    glm::vec2 new_v = c_vel.velocity + 2.0f * result.normal * abs(c_vel.velocity);
+                    glm::vec2 new_v = result.reflection_matrix * c_vel.velocity;
                     
                     // Paddle momentum transfer
                     if (collider == m_paddle.get_entity())

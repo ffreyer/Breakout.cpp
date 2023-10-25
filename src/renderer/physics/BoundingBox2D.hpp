@@ -23,6 +23,10 @@ struct HitResult {
     HitResult(glm::vec2 pos, glm::vec2 n, float t, bool b)
         : position(pos), parameter(t), hit(b)
     {
+        set_reflection_matrix(n);
+    }
+
+    void set_reflection_matrix(glm::vec2 n) {
         glm::vec2 s = glm::vec2(n.y, -n.x);
         reflection_matrix = glm::mat2();
         reflection_matrix[0][0] = s.x * s.x - n.x * n.x;
@@ -30,11 +34,21 @@ struct HitResult {
         reflection_matrix[0][1] = s.x * s.y - n.x * n.y;
         reflection_matrix[1][1] = s.y * s.y - n.y * n.y;
     }
+
+    void update(glm::vec2 pos, glm::vec2 n, float t, bool b) {
+        position = pos;
+        set_reflection_matrix(n);
+        parameter = t;
+        hit = b;
+    }
 };
 
 namespace Component {
 
     class BoundingBox2D {
+    private:
+        const float epsilon = 0.000001;
+
     public:
         float left = 0.0f;
         float right = 0.0f;
@@ -62,6 +76,11 @@ namespace Component {
         HitResult collision_parameter(glm::vec2 point, glm::vec2 radius, glm::vec2 dir);
 
         void print();
+
+    private:
+        bool internal_collision(HitResult& result, glm::bvec4 b_lrbt, glm::vec2 origin, glm::vec2 dir);
+        bool line_collision(HitResult& result, glm::bvec4 b_lrbt, glm::vec2 edge, glm::vec2 origin, glm::vec2 dir);
+        bool corner_collision(HitResult& result, glm::vec2 corner, glm::vec2 origin, float radius, glm::vec2 dir);
     };
     
 }

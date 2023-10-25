@@ -32,6 +32,12 @@
 # Other compilation files
 *.ilk
 *.pdb
+*.dll
+*.lib
+
+# Generated dependency files
+dependencies/include
+dependencies/lib
 
 # Other stuff
 TODO.md

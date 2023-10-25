@@ -3,9 +3,25 @@
 @ECHO OFF
 SetLocal EnableDelayedExpansion
 
-ECHO "Building ${PWD}"
+ECHO "Building %PWD%"
 
 mkdir bin
+
+:: Compile GLFW
+IF NOT EXIST "bin/glfw3.dll" (
+    :: compile glfw
+    mkdir "dependencies/glfw/build"
+    mkdir "dependencies/include"
+    mkdir "dependencies/lib"
+    "C:\Program Files\CMake\bin\cmake" -S "dependencies/glfw" -B "dependencies/glfw/build" -D BUILD_SHARED_LIBS=ON -D GLFW_BUILD_EXAMPLES=FALSE -D GLFW_BUILD_TESTS=FALSE GLFW_BUILD_DOCS=FALSE
+    "C:\Program Files\CMake\bin\cmake" --build "dependencies/glfw/build"
+    move /y "%~dp0\dependencies\glfw\build\src\Debug\glfw3.dll" "%~dp0\bin"
+    move /y "%~dp0\dependencies\glfw\build\src\Debug\glfw3dll.lib" "%~dp0\dependencies\lib"
+    copy /y "%~dp0\dependencies\glfw\include\GLFW\glfw3.h" "%~dp0\dependencies\include"
+    copy /y "%~dp0\dependencies\glfw\include\GLFW\glfw3native.h" "%~dp0\dependencies\include"
+    rmdir "dependencies/glfw/build" /s /q
+)
+
 
 :: Get a list of all the .c and .cpp files.
 cd src
@@ -20,9 +36,9 @@ ECHO "Files:" !cFilenames!
 SET assembly=main
 SET compilerFlags=-g -Wall
 :: Werror - this causes errors for included c files
-SET includeFlags=-Isrc -Idependencies/entt/src -Idependencies/glad/include -Idependencies/glfw/include -Idependencies/glm -Idependencies/stb
-SET linkerDirs=-Ldependencies/glfw/lib
-SET linkerFlags=-lglfw3dll -lglew32 -lopengl32
+SET includeFlags=-Isrc -Idependencies/entt/src -Idependencies/glad/include -Idependencies/include -Idependencies/glm -Idependencies/stb
+SET linkerDirs=-Ldependencies/lib
+SET linkerFlags=-lglfw3dll -lopengl32 
 REM SET defines=
 
 ECHO "Building $assembly..."
@@ -45,3 +61,14 @@ ECHO "Done."
 :: (*.cpp) is the set, regex matching cpp files I suppose
 :: /R runs the loop in every recursive directory
 :: !cFilenames! expands at run time rather than parse time like %cFilenames% would
+
+:: glfw build
+:: - create build folder in glfw for build output
+
+:: mkdir dependencies/glfw/build
+:: cmake -S dependencies/glfw -B dependencies/glfw/build -D BUILD_SHARED_LIBS=ON -D GLFW_BUILD_EXAMPLES=FALSE -D GLFW_BUILD_TESTS=FALSE GLFW_BUILD_DOCS=FALSE 
+
+:: cd dependencies/glfw/build
+:: make
+::  OR
+:: cmake --build dependencies/glfw/build

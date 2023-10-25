@@ -6,7 +6,7 @@ Application::~Application() {
     delete m_window;
 }
 
-Window* Application::get_window() {
+Window* Application::get_window() const {
     return m_window;
 }
 

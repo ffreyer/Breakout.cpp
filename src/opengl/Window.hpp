@@ -33,18 +33,18 @@ public:
 
     // doers
     bool init();
-    void activate();
-    void poll_events();
-    void swap_buffers();
+    void activate() const;
+    void poll_events() const;
+    void swap_buffers() const;
 
     // getters
-    bool should_close();
-    glm::vec2 get_mouse_position();
-    glm::ivec2 get_window_position();
-    glm::ivec2 get_window_size();
+    bool should_close() const;
+    glm::vec2 get_mouse_position() const;
+    glm::ivec2 get_window_position() const;
+    glm::ivec2 get_window_size() const;
 
     // setters
-    void set_vsync(bool active);
+    void set_vsync(bool active) const;
     void set_size(int width, int height);
 
     // implemented in Application.cpp

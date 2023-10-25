@@ -28,17 +28,17 @@ void Component::BoundingBox2D::print() {
         ", " << bottom << " .. " << top << ")" << std::endl;
 }
 
-bool Component::BoundingBox2D::collides(BoundingBox2D& other) {
+bool Component::BoundingBox2D::collides(BoundingBox2D& other) const {
     return (left < other.right && other.left < right) && 
         (bottom < other.top && other.bottom < top);
 }
 
-bool Component::BoundingBox2D::collides(glm::vec2 point) {
+bool Component::BoundingBox2D::collides(glm::vec2 point) const {
     return (left < point.x && point.x < right) && 
         (bottom < point.y && point.y < top);
 }
 
-glm::vec2 Component::BoundingBox2D::distance(glm::vec2 point) {
+glm::vec2 Component::BoundingBox2D::distance(glm::vec2 point) const {
     // b_left is 
     //  true |  false     false
     //       .---------.
@@ -62,7 +62,7 @@ glm::vec2 Component::BoundingBox2D::distance(glm::vec2 point) {
     );
 }
 
-HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, glm::vec2 dir) {
+HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, glm::vec2 dir) const {
     // See distance()
     glm::bvec4 b_lrbt = glm::bvec4(
         origin.x < left,   right < origin.x, 
@@ -89,7 +89,7 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, glm::v
     return result;
 }
 
-HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, float radius, glm::vec2 dir) {
+HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, float radius, glm::vec2 dir) const {
     // Circle - bbox intersect
     // - for line checks consider line move by radius outwards
     // - for corners solve (center + t * dir - corner)^2 = radius^2
@@ -134,7 +134,7 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, float 
     return HitResult();
 }
 
-HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, glm::vec2 radius, glm::vec2 dir) {
+HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, glm::vec2 radius, glm::vec2 dir) const {
     // Circle - bbox intersect
     // - for line checks consider line move by radius outwards
     // - for corners solve (center + t * dir - corner)^2 = radius^2
@@ -185,7 +185,7 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 origin, glm::v
 bool Component::BoundingBox2D::internal_collision(
         HitResult& result,
         glm::bvec4 b_lrbt, glm::vec2 origin, glm::vec2 dir
-    )
+    ) const
 {
     if (!b_lrbt[0] && !b_lrbt[1] && !b_lrbt[2] && !b_lrbt[3]) {
         result.update(origin, glm::normalize(-dir), 0.0f, true);
@@ -197,7 +197,7 @@ bool Component::BoundingBox2D::internal_collision(
 bool Component::BoundingBox2D::line_collision(
         HitResult& result,
         glm::bvec4 b_lrbt, glm::vec2 edge, glm::vec2 origin, glm::vec2 dir
-    )
+    ) const
 {
     // could hit bottom or top
     if ((b_lrbt[2] || b_lrbt[3]) && (std::abs(dir.y) > epsilon)) { 
@@ -226,7 +226,7 @@ bool Component::BoundingBox2D::line_collision(
 bool Component::BoundingBox2D::corner_collision(
         HitResult& result, 
         glm::vec2 corner, glm::vec2 origin, float radius, glm::vec2 dir
-    ) 
+    ) const
 {
     // ||point + t * dir - corner||^2 = radius^2
     // || p + t v ||^2 - r^2 = 0      w/ p = (point - corner), v = dir, r = radius

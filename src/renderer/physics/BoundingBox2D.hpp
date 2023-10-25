@@ -66,21 +66,21 @@ namespace Component {
         void translate_center_to(glm::vec2 p);
         void translate_lb_to(glm::vec2 p);
 
-        bool collides(BoundingBox2D& other);
-        bool collides(glm::vec2 point);
+        bool collides(BoundingBox2D& other) const;
+        bool collides(glm::vec2 point) const;
 
-        glm::vec2 distance(glm::vec2 point);
+        glm::vec2 distance(glm::vec2 point) const;
 
-        HitResult collision_parameter(glm::vec2 point, glm::vec2 dir);
-        HitResult collision_parameter(glm::vec2 point, float radius, glm::vec2 dir);
-        HitResult collision_parameter(glm::vec2 point, glm::vec2 radius, glm::vec2 dir);
+        HitResult collision_parameter(glm::vec2 point, glm::vec2 dir) const;
+        HitResult collision_parameter(glm::vec2 point, float radius, glm::vec2 dir) const;
+        HitResult collision_parameter(glm::vec2 point, glm::vec2 radius, glm::vec2 dir) const;
 
         void print();
 
     private:
-        bool internal_collision(HitResult& result, glm::bvec4 b_lrbt, glm::vec2 origin, glm::vec2 dir);
-        bool line_collision(HitResult& result, glm::bvec4 b_lrbt, glm::vec2 edge, glm::vec2 origin, glm::vec2 dir);
-        bool corner_collision(HitResult& result, glm::vec2 corner, glm::vec2 origin, float radius, glm::vec2 dir);
+        bool internal_collision(HitResult& result, glm::bvec4 b_lrbt, glm::vec2 origin, glm::vec2 dir) const;
+        bool line_collision(HitResult& result, glm::bvec4 b_lrbt, glm::vec2 edge, glm::vec2 origin, glm::vec2 dir) const;
+        bool corner_collision(HitResult& result, glm::vec2 corner, glm::vec2 origin, float radius, glm::vec2 dir) const;
     };
     
 }

@@ -39,12 +39,12 @@ public:
     }
 
     template <typename Component, typename... Args>
-    void add(Args&&... args) {
+    void add(Args&&... args) const {
         m_registry->emplace<Component>(m_entity, std::forward<Args>(args)...);
     }
 
     template <typename Component, typename... Args>
-    void set(Args&&... args) {
+    void set(Args&&... args) const {
         // patch with lambda
         // m_registry->patch<Component>(m_entity, [](auto& obj) { obj.field = x, obj.field = y })
 
@@ -53,23 +53,23 @@ public:
     }
 
     template <typename Component>
-    void remove() {
+    void remove() const {
         m_registry->erase<Component>(m_entity);
         // or remove to be save
         // m_registry->remove<Component>(m_entity);
     }
 
     template <typename Component>
-    Component& get() {
+    Component& get() const {
         return m_registry->get<Component>(m_entity);
     }
 
     template <typename... Component>
-    bool has() {
+    bool has() const {
         return m_registry->all_of<Component...>(m_entity);
     }
 
-    entt::entity get_entity() {
+    entt::entity get_entity() const {
         return m_entity;
     }
 };

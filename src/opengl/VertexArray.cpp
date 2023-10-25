@@ -175,6 +175,6 @@ void GLVertexArray::unbind() const {
     glBindVertexArray(0);
 }
 
-void GLVertexArray::update(size_t idx, void* data, size_t size) {
+void GLVertexArray::update(size_t idx, void* data, size_t size) const {
     m_buffers[idx]->set_data(data, size);
 }

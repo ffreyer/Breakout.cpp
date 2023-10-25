@@ -45,7 +45,7 @@ bool GLShader::add_source(const char *filepath) {
     return true;
 }
 
-bool GLShader::_compile_single(std::vector<const char*>& paths, unsigned int type, const char* name, std::vector<unsigned int>& ids) {
+bool GLShader::_compile_single(std::vector<const char*>& paths, unsigned int type, const char* name, std::vector<unsigned int>& ids) const {
     for (const char* filepath : paths) {
         unsigned int id = generate_shader(file_to_string(filepath).c_str(), type);
         if (id)
@@ -74,11 +74,6 @@ bool GLShader::compile() {
     m_id = generate_program(vertex_shader_ids, geometry_shader_ids, fragment_shader_ids);
 
     return false;
-}
-
-
-void GLShader::use(){
-    glUseProgram(m_id);
 }
 
 unsigned int GLShader::get_uniform_location(const std::string &name) const {
@@ -171,7 +166,7 @@ std::string file_to_string(const char* filepath) {
     } 
 }
 
-unsigned int GLShader::generate_shader(const char *shader_source, unsigned int type) {
+unsigned int GLShader::generate_shader(const char *shader_source, unsigned int type) const {
     unsigned int shader = glCreateShader(type);
     glShaderSource(shader, 1, &shader_source, NULL);
     glCompileShader(shader);
@@ -211,7 +206,7 @@ unsigned int GLShader::generate_program(
         std::vector<unsigned int>& vertex_shaders, 
         std::vector<unsigned int>& geometry_shaders,
         std::vector<unsigned int>& fragment_shaders
-    )
+    ) const
 {
     unsigned int shader_program = glCreateProgram();
 

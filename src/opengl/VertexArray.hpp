@@ -72,7 +72,7 @@ public:
 	void unbind() const;
 	uint32_t index_count() const { return m_indices->size(); }
 
-	void update(size_t idx, void* data, size_t size);
+	void update(size_t idx, void* data, size_t size) const;
 };
 
 

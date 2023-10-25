@@ -42,7 +42,8 @@ public:
     bool add_source(const char* filepath);
     bool compile();
 
-    void use();
+    void use() const { glUseProgram(m_id); };
+    void bind() const { glUseProgram(m_id); };
 
     void set_uniform(const std::string &name, bool v1) const;
     void set_uniform(const std::string &name, bool v1, bool v2) const;
@@ -68,18 +69,18 @@ public:
     void set_uniform(const std::string &name, glm::vec4 mat) const;
 
 private:
-    unsigned int generate_shader(const char *shader_source, unsigned int type);
+    unsigned int generate_shader(const char *shader_source, unsigned int type) const;
     unsigned int generate_program(
         std::vector<unsigned int>& vertex_shaders, 
         std::vector<unsigned int>& geometry_shaders,
         std::vector<unsigned int>& fragment_shaders
-    );
+    ) const;
     
     bool _compile_single(
         std::vector<const char*>& paths, 
         unsigned int type, const char* name, 
         std::vector<unsigned int>& ids
-    );
+    ) const;
     
     unsigned int get_uniform_location(const std::string &name) const;
 };

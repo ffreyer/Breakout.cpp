@@ -166,11 +166,10 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 point, float r
     float root_arg = b * b - 4 * a * c;
     if (root_arg >= 0.0f && a > epsilon) {
         float root_val = sqrtf(root_arg);
-        float t1 = (-b + root_val) / (2 * a);
         float t2 = (-b - root_val) / (2 * a);
-        p = point + t1 * dir;
+        p = point + t2 * dir;
         // std::cout << t1 << ", " << t2 << std::endl;
-        // return HitResult(p, glm::normalize(p - corner), t1, true);
+        return HitResult(p, glm::normalize(p - corner), t2, true);
     }
 
     // Can't/Didn't hit anything
@@ -229,25 +228,22 @@ HitResult Component::BoundingBox2D::collision_parameter(glm::vec2 point, glm::ve
     // check corner
     glm::vec2& corner = edge;
 
-    // ||aspect * (...)|| = (aspect * radius)^2
-    // ||point + t * dir - corner||^2 = radius^2
-    // || p + t v ||^2 - r^2 = 0      w/ p = (point - corner), v = dir, r = radius
-    // = (p.x + t v.x)^2 + (p.y + t v.y)^2 - r^2
-    // = p.x^2 + 2 t p.x v.x + t^2 v.x^2 + p.y^2 + 2 t p.y v.y + t^2 v.y^2 - r^2
-    // = t^2 (v.x^2 + v.y^2) + t 2(p.x v.x + p.y v.y) + (p.x^2 + p.y^2 - r^2)
+    // if the radius has uneven scaling in x and y direction we transform
+    // to a space where it's evenly scaled by transforming point, corner and dir
     glm::vec2 inv_aspect = radius.y / radius;
-    float a = glm::dot(inv_aspect * dir, inv_aspect * dir);
     glm::vec2 p = inv_aspect * (point - corner);
-    float b = 2 * glm::dot(p, inv_aspect * dir);
+    glm::vec2 v = inv_aspect * dir;
+
+    float a = glm::dot(v, v);
+    float b = 2 * glm::dot(p, v);
     float c = glm::dot(p, p) - radius.y * radius.y;
     float root_arg = b * b - 4 * a * c;
-    if (root_arg >= 0.0f && a > epsilon) {
+
+    if (root_arg >= 0.0f && a > epsilon && b < 0.0f) {
         float root_val = sqrtf(root_arg);
-        float t1 = (-b + root_val) / (2 * a);
         float t2 = (-b - root_val) / (2 * a);
-        p = point + t1 * dir;
-        // std::cout << t1 << ", " << t2 << std::endl;
-        // return HitResult(p, glm::normalize(p - corner), t1, true);
+        p = point + t2 * dir;
+        return HitResult(p, glm::normalize(p - corner), t2, true);
     }
 
     // Can't/Didn't hit anything

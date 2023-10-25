@@ -61,8 +61,8 @@ public:
     void set_uniform(const std::string &name, float v1, float v2, float v3, float v4) const;
 
     void set_uniform(const std::string &name, glm::mat2 mat) const;
-    void set_uniform(const std::string &name, glm::mat3 mat) const;
-    void set_uniform(const std::string &name, glm::mat4 mat) const;
+    void set_uniform(const std::string &name, const glm::mat3& mat) const;
+    void set_uniform(const std::string &name, const glm::mat4& mat) const;
 
     void set_uniform(const std::string &name, glm::vec2 mat) const;
     void set_uniform(const std::string &name, glm::vec3 mat) const;

@@ -7,7 +7,7 @@
 
 // TODO: rework this to work with <<
 
-void print(glm::mat4 M) {
+void print(const glm::mat4& M) {
     glm::mat4 temp = glm::transpose(M);
     for (int i = 0; i < 4; i++) {
         glm::vec4 v = temp[i];

@@ -28,7 +28,7 @@ void Component::BoundingBox2D::print() {
         ", " << bottom << " .. " << top << ")" << std::endl;
 }
 
-bool Component::BoundingBox2D::collides(BoundingBox2D& other) const {
+bool Component::BoundingBox2D::collides(const BoundingBox2D& other) const {
     return (left < other.right && other.left < right) && 
         (bottom < other.top && other.bottom < top);
 }

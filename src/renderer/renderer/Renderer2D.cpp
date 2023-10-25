@@ -79,7 +79,7 @@ Renderer2D::~Renderer2D() {
     free(m_data.circle_buffer);
 }
 
-Entity Renderer2D::create_entity(std::string name) {
+Entity Renderer2D::create_entity(const std::string& name) {
     Entity entity = { m_registry, m_registry.create() };
     m_entities.push_back(entity);
     entity.add<Component::Name>(name);

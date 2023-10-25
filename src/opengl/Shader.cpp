@@ -126,10 +126,10 @@ void GLShader::set_uniform(const std::string &name, float v1, float v2, float v3
 void GLShader::set_uniform(const std::string &name, glm::mat2 mat) const {
     glUniformMatrix2fv(get_uniform_location(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
-void GLShader::set_uniform(const std::string &name, glm::mat3 mat) const {
+void GLShader::set_uniform(const std::string &name, const glm::mat3& mat) const {
     glUniformMatrix3fv(get_uniform_location(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
-void GLShader::set_uniform(const std::string &name, glm::mat4 mat) const {
+void GLShader::set_uniform(const std::string &name, const glm::mat4& mat) const {
     glUniformMatrix4fv(get_uniform_location(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
 

@@ -19,7 +19,7 @@ public:
     Application();
     ~Application();
 
-    Window* get_window();
+    Window* get_window() const;
 
     bool init(const char* name, int width, int height);
     void run();

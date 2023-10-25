@@ -42,3 +42,12 @@ namespace Component {
     struct Destructable {
     };
 }
+
+std::ostream& operator<<(std::ostream& stream, Component::Circle comp);
+std::ostream& operator<<(std::ostream& stream, Component::Quad comp);
+std::ostream& operator<<(std::ostream& stream, Component::Name& comp);
+std::ostream& operator<<(std::ostream& stream, Component::Position comp);
+std::ostream& operator<<(std::ostream& stream, Component::CameraData comp);
+std::ostream& operator<<(std::ostream& stream, Component::Color comp);
+std::ostream& operator<<(std::ostream& stream, Component::Velocity comp);
+std::ostream& operator<<(std::ostream& stream, Component::Destructable comp);

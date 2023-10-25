@@ -20,6 +20,8 @@ static const char* enum_to_string(EventType type) {
 	return conversion[(size_t) type];
 }
 
+std::ostream& operator<<(std::ostream& stream, EventType type);
+
 namespace Mouse {
 
 enum : MouseCode {

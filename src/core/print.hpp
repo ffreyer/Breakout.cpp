@@ -5,23 +5,26 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
-// TODO: rework this to work with <<
-
-void print(const glm::mat4& M) {
-    glm::mat4 temp = glm::transpose(M);
-    for (int i = 0; i < 4; i++) {
-        glm::vec4 v = temp[i];
-        for (int j = 0; j < 4; j++) {
-            std::cout << v[j] << ", ";
-        }
-        std::cout << std::endl;
+template<int Lx, int Ly, typename T, glm::qualifier Q>
+std::ostream& operator<<(std::ostream& stream, const glm::mat<Lx, Ly, T, Q>& M) {
+    for (int i = 0; i < Ly-1; i++){
+        for (int j = 0; j < Lx-1; j++)
+            stream << M[i][j] << ", ";
+        stream << M[Ly-1][i] << "\n";
     }
-    std::cout << std::endl;
+
+    for (int j = 0; j < Ly-1; j++)
+            stream << M[j][Lx-1] << ", ";
+
+    stream << M[Lx-1][Ly-1];
+    return stream;
 }
 
 template<int L, typename T, glm::qualifier Q>
-void print(glm::vec<L, T, Q> v) {
+std::ostream& operator<<(std::ostream& stream, const glm::vec<L, T, Q> v) {
+    stream << "vec4(";
     for (int j = 0; j < L-1; j++)
-        std::cout << v[j] << ", ";
-    std::cout << v[L-1] << std::endl;
+        stream << v[j] << ", ";
+    stream << v[L-1] << ")";
+	return stream;
 }

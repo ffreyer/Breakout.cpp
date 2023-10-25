@@ -29,15 +29,13 @@ public:
 
         // Physics update (TODO: cleanup)
         {
-            Component::Name& mover_name = m_ball.get<Component::Name>();
-            Component::ID& mover_id     = m_ball.get<Component::ID>();
             Component::Position& c_pos  = m_ball.get<Component::Position>();
             Component::Velocity& c_vel  = m_ball.get<Component::Velocity>();
             Component::Circle& c_circle = m_ball.get<Component::Circle>();
 
             glm::vec2 radius = 2.0f * c_circle.radius / glm::vec2(m_window->get_window_size());
             glm::vec2 delta = delta_time * c_vel.velocity;
-            glm::vec3 new_pos = c_pos.position + glm::vec3(delta.x, delta.y, 0.0f);
+            glm::vec3 new_pos = c_pos.position + glm::vec3(delta, 0.0f);
 
             auto colliders = m_renderer.m_registry.view<Component::BoundingBox2D>();
 
@@ -49,24 +47,16 @@ public:
                 HitResult result = bbox.collision_parameter(c_pos.position, radius, delta);
 
                 if (result.hit && (0.0 <= result.parameter) && (result.parameter <= 1.0)) {
-                    Component::Name& collider_name = m_renderer.m_registry.get<Component::Name>(collider);
-                    Component::ID& collider_id = m_renderer.m_registry.get<Component::ID>(collider);
-                    // std::cout << mover_name.name << " " << mover_id.id << " collided with " << 
-                        // collider_name.name << " " << collider_id.id << "  |  " << result.parameter <<
-                        // "(" << result.normal.x << ", " << result.normal.y << ")" << std::endl;
-                    
-                    glm::vec2 new_v = result.reflection_matrix * c_vel.velocity;
-                    
-                    // Paddle momentum transfer
-                    if (collider == m_paddle.get_entity())
-                        new_v = new_v + m_renderer.m_registry.get<Component::Velocity>(collider).velocity;
-                    else if (m_renderer.m_registry.all_of<Component::Destructable>(collider)) {
+                    if (collider == m_paddle.get_entity()) {
+                        // Ok the original game looks like it tries to do correct reflections
+                        // but fails near the edge?
+                    } else if (m_renderer.m_registry.all_of<Component::Destructable>(collider)) {
                         m_score++;
                         m_renderer.m_registry.destroy(collider);
                         std::cout << "Destroyed Block. Score: " << m_score << std::endl;
-                        // new_v = 1.1f * new_v; // creates bugs and also too much
                     }
                     
+                    glm::vec2 new_v = result.reflection_matrix * c_vel.velocity;
                     new_pos = c_pos.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
                     c_vel.velocity = new_v;
                     break;
@@ -116,12 +106,7 @@ public:
         Component::BoundingBox2D& bbox = m_paddle.get<Component::BoundingBox2D>();
         Component::Quad& quad = m_paddle.get<Component::Quad>();
         Component::Position& pos = m_paddle.get<Component::Position>();
-        Component::Velocity& vel = m_paddle.get<Component::Velocity>();
-        float new_x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * quad.size.x;
-        // smooth out velocity over multiple frames
-        // weights: ... 0.125 0.25 0.5
-        vel.velocity.x = 0.5 * (vel.velocity.x + (new_x - pos.position.x)); 
-        pos.position.x = new_x;
+        pos.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * quad.size.x;
         bbox.translate_lb_to(glm::vec2(pos.position));
     }
 
@@ -131,7 +116,7 @@ public:
 
         // Add Ball
         m_ball = m_renderer.create_circle();
-        m_ball.add<Component::Velocity>(glm::vec2(0.1f, 0.5f));
+        m_ball.add<Component::Velocity>(glm::vec2(0.1f, 1.0f));
 
         // Add Bricks
         int columns = 10, rows = 6;
@@ -157,7 +142,6 @@ public:
 
         // Add paddle
         m_paddle = m_renderer.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
-        m_paddle.add<Component::Velocity>(glm::vec2(0.0f, 0.0f));
 
         // Add wall colliders
         Entity wall_l = m_renderer.create_entity("Wall left");

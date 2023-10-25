@@ -66,6 +66,8 @@ namespace Component {
         void translate_center_to(glm::vec2 p);
         void translate_lb_to(glm::vec2 p);
 
+        glm::vec2 get_center();
+
         bool collides(const BoundingBox2D& other) const;
         bool collides(glm::vec2 point) const;
 

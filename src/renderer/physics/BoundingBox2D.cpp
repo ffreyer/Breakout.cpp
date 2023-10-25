@@ -28,6 +28,11 @@ void Component::BoundingBox2D::print() {
         ", " << bottom << " .. " << top << ")" << std::endl;
 }
 
+glm::vec2 Component::BoundingBox2D::get_center() {
+    return glm::vec2(0.5f * (left + right), 0.5f * (bottom + top));
+}
+
+
 bool Component::BoundingBox2D::collides(const BoundingBox2D& other) const {
     return (left < other.right && other.left < right) && 
         (bottom < other.top && other.bottom < top);

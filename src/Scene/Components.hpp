@@ -2,7 +2,11 @@
 
 #include <string>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 
 // With
 // operator const (type)&() { return fieldname; }
@@ -29,36 +33,54 @@ namespace Component {
         operator const std::string&() { return name; }
     };
 
+    struct Transform {
+        glm::vec3 position = glm::vec3(0.0f);
+        glm::vec3 rotation = glm::vec3(0.0f);
+        glm::vec3 scale = glm::vec3(1.0f);
+
+        Transform() = default;
+        Transform(const Transform&) = default;
+        Transform(glm::vec3 p) { position = p; }
+        Transform(glm::vec3 p, glm::vec3 s) { position = p; scale = s; }
+
+        glm::mat4 get_matrix() {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::scale(model, scale);
+            model = glm::toMat4(glm::quat(rotation)) * model;
+            model = glm::translate(model, position);
+            return model;
+        }
+
+        // TODO: Should this be included?
+        void translate_by(glm::vec3 v) {
+            position = position + v;
+        }
+        void scale_by(glm::vec3 v) {
+            scale = scale * v;
+        }
+
+        operator const glm::mat4() { return get_matrix(); }
+    };
+
     // Geometries
     struct Circle {
-        float radius;
-
-        operator const float() { return radius; }
+        // color
+        // maybe texture
+        // maybe edge softness?
     };
 
     struct Quad {
-        glm::vec2 size;
-
-        operator const glm::vec2() { return size; }
+        // color
+        // texture
     };
 
     // Generic
-
-    struct Position {
-        glm::vec3 position;
-
-        operator const glm::vec3() { return position; }
-    };
 
     struct CameraData {
         glm::mat4 projection;
         glm::mat4 view;
         glm::mat4 projectionview;
         glm::vec2 resolution;
-    };
-
-    struct Color {
-        glm::vec4 color;
     };
 
     struct Velocity {
@@ -69,11 +91,10 @@ namespace Component {
     };
 }
 
+std::ostream& operator<<(std::ostream& stream, Component::Name& comp);
+std::ostream& operator<<(std::ostream& stream, Component::Transform& comp);
 std::ostream& operator<<(std::ostream& stream, Component::Circle comp);
 std::ostream& operator<<(std::ostream& stream, Component::Quad comp);
-std::ostream& operator<<(std::ostream& stream, Component::Name& comp);
-std::ostream& operator<<(std::ostream& stream, Component::Position comp);
 std::ostream& operator<<(std::ostream& stream, Component::CameraData comp);
-std::ostream& operator<<(std::ostream& stream, Component::Color comp);
 std::ostream& operator<<(std::ostream& stream, Component::Velocity comp);
 std::ostream& operator<<(std::ostream& stream, Component::Destructable comp);

@@ -31,22 +31,23 @@ public:
         {
             entt::registry& reg = m_scene.get_registry();
 
-            Component::Position& c_pos  = m_ball.get<Component::Position>();
-            Component::Velocity& c_vel  = m_ball.get<Component::Velocity>();
-            Component::Circle& c_circle = m_ball.get<Component::Circle>();
+            Component::Transform& c_transform = m_ball.get<Component::Transform>();
+            Component::Velocity& c_vel = m_ball.get<Component::Velocity>();
 
-            glm::vec2 radius = 2.0f * c_circle.radius / glm::vec2(m_window->get_window_size());
+            // TODO: fix
+            glm::vec2 radius = 2.0f * c_transform.scale.x / glm::vec2(m_window->get_window_size());
             glm::vec2 delta = delta_time * c_vel.velocity;
-            glm::vec3 new_pos = c_pos.position + glm::vec3(delta, 0.0f);
+            glm::vec3 new_pos = c_transform.position + glm::vec3(delta, 0.0f);
 
-            auto colliders = reg.view<Component::BoundingBox2D>();
+            auto colliders = reg.view<Component::Transform, Component::BoundingBox2D>();
 
             for (const auto collider : colliders) {
                 if (collider == m_ball.get_entity())
                     continue;
 
-                Component::BoundingBox2D bbox = reg.get<Component::BoundingBox2D>(collider);
-                HitResult result = bbox.collision_parameter(c_pos.position, radius, delta);
+                auto [transform, bbox] = colliders.get<Component::Transform, Component::BoundingBox2D>(collider);
+                bbox.set(transform.position, transform.scale); // TODO: static version?
+                HitResult result = bbox.collision_parameter(c_transform.position, radius, delta);
 
                 if (result.hit && (0.0 <= result.parameter) && (result.parameter <= 1.0)) {
                     if (collider == m_paddle.get_entity()) {
@@ -59,19 +60,19 @@ public:
                     }
                     
                     glm::vec2 new_v = result.reflection_matrix * c_vel.velocity;
-                    new_pos = c_pos.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
+                    new_pos = c_transform.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
                     c_vel.velocity = new_v;
                     break;
                 }
             }   
             // std::cout << std::endl;
-            c_pos.position = new_pos;
+            c_transform.position = new_pos;
         }
 
         // Check gameover
         {
-            Component::Position c_pos = m_ball.get<Component::Position>();
-            if (c_pos.position.y < -1.0f) {
+            Component::Transform c_transform = m_ball.get<Component::Transform>();
+            if (c_transform.position.y < -1.0f) {
                 std::cout << "Gameover" << std::endl;
                 m_paused = true;
             }
@@ -130,11 +131,18 @@ public:
         m_paddle = m_scene.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
 
         // Add wall colliders
+        // TODO: static collider
         Entity wall_l = m_scene.create_entity("Wall left");
-        wall_l.add<Component::BoundingBox2D>(-2.0f, -1.0f, -2.0f, 2.0f);
+        wall_l.add<Component::BoundingBox2D>();
+        wall_l.add<Component::Transform>(glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
+        
         Entity wall_r = m_scene.create_entity("Wall right");
-        wall_r.add<Component::BoundingBox2D>( 1.0f,  2.0f, -2.0f, 2.0f);
-        m_scene.create_entity("Wall top").add<Component::BoundingBox2D>(-2.0f, 2.0f, 1.0f, 2.0f);
+        wall_r.add<Component::BoundingBox2D>();
+        wall_r.add<Component::Transform>(glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
+
+        Entity wall_top = m_scene.create_entity("Wall top");
+        wall_top.add<Component::BoundingBox2D>();
+        wall_top.add<Component::Transform>(glm::vec3(-2.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 1.0f));
     }
 
 
@@ -147,10 +155,9 @@ private:
         w = (float) get_window_size().x;
 
         Component::BoundingBox2D& bbox = m_paddle.get<Component::BoundingBox2D>();
-        Component::Quad& quad = m_paddle.get<Component::Quad>();
-        Component::Position& pos = m_paddle.get<Component::Position>();
-        pos.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * quad.size.x;
-        bbox.translate_lb_to(glm::vec2(pos.position));
+        Component::Transform& transform = m_paddle.get<Component::Transform>();
+        transform.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * transform.scale.x;
+        bbox.translate_lb_to(glm::vec2(transform.position));
     }
 };
 

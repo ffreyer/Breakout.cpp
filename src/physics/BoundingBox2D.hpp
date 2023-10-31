@@ -51,9 +51,9 @@ namespace Component {
 
     public:
         float left = 0.0f;
-        float right = 0.0f;
+        float right = 1.0f;
         float bottom = 0.0f;
-        float top = 0.0f;
+        float top = 1.0f;
 
         BoundingBox2D() = default;
         BoundingBox2D(float l, float r, float b, float t) : left(l), right(r), bottom(b), top(t) {}
@@ -61,6 +61,8 @@ namespace Component {
             : left(position.x), right(position.x + size.x), bottom(position.y), top(position.y + size.y)
         {
         }
+
+        void set(glm::vec2 position, glm::vec2 size);
 
         void translate_by(glm::vec2 v);
         void translate_center_to(glm::vec2 p);

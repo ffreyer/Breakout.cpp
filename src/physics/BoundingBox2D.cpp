@@ -1,7 +1,14 @@
 #include "BoundingBox2D.hpp"
 
 #include <iostream>
-  
+
+void Component::BoundingBox2D::set(glm::vec2 position, glm::vec2 size) {
+    left = position.x;
+    right = position.x + size.x;
+    bottom = position.y;
+    top = position.y + size.y;
+}
+
 void Component::BoundingBox2D::translate_by(glm::vec2 v) {
     left = left + v.x;
     right = right + v.x;

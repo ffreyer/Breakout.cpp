@@ -2,14 +2,14 @@
 
 #include <glm/glm.hpp>
 
-#include "renderer/renderer/Renderer2D.hpp"
-#include "renderer/physics.hpp"
+#include "Scene/Scene2D.hpp"
+#include "physics/BoundingBox2D.hpp"
 #include "core/Application.hpp"
 #include "core/print.hpp"
 
 class MyApp : public Application {
 private:
-    Renderer2D m_renderer;
+    Scene2D m_scene;
     Entity m_ball;
     Entity m_paddle;
     uint16_t m_score = 0;
@@ -18,7 +18,7 @@ private:
 public:
     MyApp() {
         if (init("Test Window", 800, 600)) {
-            m_renderer.init();
+            m_scene.init();
             reset();
         }
     }
@@ -29,6 +29,8 @@ public:
 
         // Physics update (TODO: cleanup)
         {
+            entt::registry& reg = m_scene.get_registry();
+
             Component::Position& c_pos  = m_ball.get<Component::Position>();
             Component::Velocity& c_vel  = m_ball.get<Component::Velocity>();
             Component::Circle& c_circle = m_ball.get<Component::Circle>();
@@ -37,22 +39,22 @@ public:
             glm::vec2 delta = delta_time * c_vel.velocity;
             glm::vec3 new_pos = c_pos.position + glm::vec3(delta, 0.0f);
 
-            auto colliders = m_renderer.m_registry.view<Component::BoundingBox2D>();
+            auto colliders = reg.view<Component::BoundingBox2D>();
 
             for (const auto collider : colliders) {
                 if (collider == m_ball.get_entity())
                     continue;
 
-                Component::BoundingBox2D bbox = m_renderer.m_registry.get<Component::BoundingBox2D>(collider);
+                Component::BoundingBox2D bbox = reg.get<Component::BoundingBox2D>(collider);
                 HitResult result = bbox.collision_parameter(c_pos.position, radius, delta);
 
                 if (result.hit && (0.0 <= result.parameter) && (result.parameter <= 1.0)) {
                     if (collider == m_paddle.get_entity()) {
                         // Ok the original game looks like it tries to do correct reflections
                         // but fails near the edge?
-                    } else if (m_renderer.m_registry.all_of<Component::Destructable>(collider)) {
+                    } else if (reg.all_of<Component::Destructable>(collider)) {
                         m_score++;
-                        m_renderer.m_registry.destroy(collider);
+                        reg.destroy(collider);
                         std::cout << "Destroyed Block. Score: " << m_score << std::endl;
                     }
                     
@@ -76,9 +78,7 @@ public:
         }
 
         // Render
-        m_renderer.begin();
-        m_renderer.render();
-        m_renderer.end();
+        m_scene.render();
     }
 
     void on_event(AbstractEvent& event) override {
@@ -98,10 +98,10 @@ public:
 
     void reset() {
         m_score = 0;
-        m_renderer.reset();
+        m_scene.clear();
 
         // Add Ball
-        m_ball = m_renderer.create_circle();
+        m_ball = m_scene.create_circle();
         m_ball.add<Component::Velocity>(glm::vec2(0.1f, 1.0f));
 
         // Add Bricks
@@ -114,7 +114,7 @@ public:
             for (int j = 0; j < rows; j++) {
                 // aspect rescaling only works on init
                 float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
-                Entity e = m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
+                Entity e = m_scene.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
                 e.add<Component::Destructable>();
             }
         }
@@ -127,14 +127,14 @@ public:
         // }
 
         // Add paddle
-        m_paddle = m_renderer.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
+        m_paddle = m_scene.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
 
         // Add wall colliders
-        Entity wall_l = m_renderer.create_entity("Wall left");
+        Entity wall_l = m_scene.create_entity("Wall left");
         wall_l.add<Component::BoundingBox2D>(-2.0f, -1.0f, -2.0f, 2.0f);
-        Entity wall_r = m_renderer.create_entity("Wall right");
+        Entity wall_r = m_scene.create_entity("Wall right");
         wall_r.add<Component::BoundingBox2D>( 1.0f,  2.0f, -2.0f, 2.0f);
-        m_renderer.create_entity("Wall top").add<Component::BoundingBox2D>(-2.0f, 2.0f, 1.0f, 2.0f);
+        m_scene.create_entity("Wall top").add<Component::BoundingBox2D>(-2.0f, 2.0f, 1.0f, 2.0f);
     }
 
 

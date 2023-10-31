@@ -3,18 +3,7 @@
 #include <entt/entt.hpp>
 #include <iostream>
 
-namespace Component {
-    static uint64_t s_id = 0;
-
-    struct ID{
-        uint64_t id;
-        ID() {
-            id = s_id;
-            s_id = s_id + 1;
-        }
-    };
-
-}
+#include "Components.hpp"
 
 class Entity {
 private:
@@ -27,7 +16,6 @@ public:
     Entity(entt::registry& registry, entt::entity entity) : 
         m_registry(&registry), m_entity(entity)
     {
-        add<Component::ID>();
         // std::cout << "Entity " << get<Component::ID>().id << " created" << std::endl;
     }
     Entity(const Entity& other) = default;

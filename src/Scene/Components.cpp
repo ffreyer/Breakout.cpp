@@ -1,5 +1,5 @@
-#include "components.hpp"
-#include "../../core/print.hpp"
+#include "Components.hpp"
+#include "../core/print.hpp"
 
 std::ostream& operator<<(std::ostream& stream, Component::Circle comp) {
     stream << "Circle(radius = " << comp.radius << ")";

@@ -82,17 +82,11 @@ public:
     }
 
     void on_event(AbstractEvent& event) override {
+        dispatch<MouseMoveEvent>(BIND_EVENT_FN(update_paddle_position), event);
+        dispatch<WindowResizeEvent>(BIND_EVENT_FN(update_paddle_position), event);
+
         // Update Paddle position
-        float x, w;
-        if (event.type == EventType::MouseMoved) {
-            x = static_cast<MouseMoveEvent&>(event).position.x;
-            w = (float) get_window_size().x;
-        }
-        else if (event.type == EventType::WindowResize) {
-            x = get_mouse_position().x;
-            w = (float) static_cast<WindowResizeEvent&>(event).size.x;
-        }
-        else if (event.type == EventType::KeyReleased) {
+        if (event.type == EventType::KeyReleased) {
             KeyEvent& ke = static_cast<KeyEvent&>(event);
             if (ke.button == Key::R)
                 reset();
@@ -100,14 +94,6 @@ public:
 
             return;
         }
-        else
-            return;
-
-        Component::BoundingBox2D& bbox = m_paddle.get<Component::BoundingBox2D>();
-        Component::Quad& quad = m_paddle.get<Component::Quad>();
-        Component::Position& pos = m_paddle.get<Component::Position>();
-        pos.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * quad.size.x;
-        bbox.translate_lb_to(glm::vec2(pos.position));
     }
 
     void reset() {
@@ -150,7 +136,24 @@ public:
         wall_r.add<Component::BoundingBox2D>( 1.0f,  2.0f, -2.0f, 2.0f);
         m_renderer.create_entity("Wall top").add<Component::BoundingBox2D>(-2.0f, 2.0f, 1.0f, 2.0f);
     }
+
+
+private:
+    void update_paddle_position(MouseMoveEvent& e) { return update_paddle_position(); }
+    void update_paddle_position(WindowResizeEvent& e) { return update_paddle_position(); }
+    void update_paddle_position() {
+        float x, w;
+        x = get_mouse_position().x;
+        w = (float) get_window_size().x;
+
+        Component::BoundingBox2D& bbox = m_paddle.get<Component::BoundingBox2D>();
+        Component::Quad& quad = m_paddle.get<Component::Quad>();
+        Component::Position& pos = m_paddle.get<Component::Position>();
+        pos.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * quad.size.x;
+        bbox.translate_lb_to(glm::vec2(pos.position));
+    }
 };
+
 
 
 int main() {

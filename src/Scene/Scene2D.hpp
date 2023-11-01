@@ -52,10 +52,14 @@ public:
     // Entity Constructors:
 
     Entity create_circle() {
+        return create_circle(glm::vec3(0), 0.1f);
+    }
+
+    Entity create_circle(glm::vec3 pos, float r) {
         Entity entity = create_entity("Circle Entity");
 
         entity.add<Component::Circle>(); 
-        entity.add<Component::Transform>();
+        entity.add<Component::Transform>(pos, glm::vec3(r, r, 1));
         entity.add<Component::BoundingBox2D>();
         // entity.add<Component::CameraData>();
 
@@ -77,8 +81,8 @@ public:
     }
 
 
-    void render() {
-        m_renderer.begin();
+    void render(glm::vec2 resolution) {
+        m_renderer.begin(resolution);
 
         {
             auto view = m_registry.view<Component::Transform, Component::Quad>();

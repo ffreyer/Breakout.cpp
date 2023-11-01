@@ -68,7 +68,7 @@ public:
 
     void init();
 
-    void begin();
+    void begin(glm::vec2 resolution);
     void draw_quad(glm::vec3 position, glm::vec2 size);
     void draw_circle(glm::vec3 position, float radius);
     void end();

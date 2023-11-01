@@ -6,6 +6,7 @@
 #include "physics/BoundingBox2D.hpp"
 #include "core/Application.hpp"
 #include "core/print.hpp"
+#include "core/logging.hpp"
 
 class MyApp : public Application {
 private:
@@ -35,7 +36,7 @@ public:
             Component::Velocity& c_vel = m_ball.get<Component::Velocity>();
 
             // TODO: fix
-            glm::vec2 radius = 2.0f * c_transform.scale.x / glm::vec2(m_window->get_window_size());
+            glm::vec2 radius = glm::vec2(c_transform.scale);
             glm::vec2 delta = delta_time * c_vel.velocity;
             glm::vec3 new_pos = c_transform.position + glm::vec3(delta, 0.0f);
 
@@ -79,7 +80,7 @@ public:
         }
 
         // Render
-        m_scene.render();
+        m_scene.render(m_window->get_window_size());
     }
 
     void on_event(AbstractEvent& event) override {
@@ -102,7 +103,7 @@ public:
         m_scene.clear();
 
         // Add Ball
-        m_ball = m_scene.create_circle();
+        m_ball = m_scene.create_circle(glm::vec3(0), 0.02f);
         m_ball.add<Component::Velocity>(glm::vec2(0.1f, 1.0f));
 
         // Add Bricks
@@ -135,14 +136,17 @@ public:
         Entity wall_l = m_scene.create_entity("Wall left");
         wall_l.add<Component::BoundingBox2D>();
         wall_l.add<Component::Transform>(glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
+        wall_l.add<Component::Quad>();
         
         Entity wall_r = m_scene.create_entity("Wall right");
         wall_r.add<Component::BoundingBox2D>();
         wall_r.add<Component::Transform>(glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
+        wall_r.add<Component::Quad>();
 
         Entity wall_top = m_scene.create_entity("Wall top");
         wall_top.add<Component::BoundingBox2D>();
         wall_top.add<Component::Transform>(glm::vec3(-2.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+        wall_top.add<Component::Quad>();
     }
 
 

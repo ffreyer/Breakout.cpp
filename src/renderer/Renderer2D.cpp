@@ -1,8 +1,6 @@
 
 #include "Renderer2D.hpp"
 
-// #include <iostream>
-
 Renderer2D::Renderer2D() :
     m_camera(OrthographicCamera(-1.0f, 1.0f, -1.0f, 1.0f))
 {}
@@ -69,8 +67,12 @@ Renderer2D::~Renderer2D() {
 // TODO: refactor this to work without glad
 #include <glad/gl.h>
 
-void Renderer2D::begin() {
-    // TODO: camera recalculation?
+void Renderer2D::begin(glm::vec2 resolution) {
+    // This should probably be handled by Scene
+    // Fixing shorter dimension here to avoid edges +-1 being outside a standard window
+    float aspect = resolution.x / resolution.y;
+    m_camera.set_bounds(-aspect, aspect, -1.0f, 1.0f);
+
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -101,6 +103,8 @@ void Renderer2D::draw_circle(glm::vec3 position, float radius) {
 
 void Renderer2D::end() {
     // TODO: swap buffers here?
+    // probably not because we might have multiple renderers in the future?
+    
     // flush buffers
     render_quads();
     render_circles();

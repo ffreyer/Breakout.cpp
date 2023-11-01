@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "Components.hpp"
+#include "../core/logging.hpp"
 
 class Entity {
 private:
@@ -16,12 +17,12 @@ public:
     Entity(entt::registry& registry, entt::entity entity) : 
         m_registry(&registry), m_entity(entity)
     {
-        // std::cout << "Entity " << get<Component::ID>().id << " created" << std::endl;
+        // INFO << "Created entity " << (uint32_t) m_entity << std::endl;
     }
     Entity(const Entity& other) = default;
 
     ~Entity() {
-        // std::cout << "Entity " << get<Component::ID>().id << " destroyed" << std::endl;
+        // INFO << "Deleted entity " <<  m_entity << std::endl;
         // TODO: this clashes with Renderer destructor
         // m_registry->destroy(m_entity);
     }

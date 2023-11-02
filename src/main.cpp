@@ -136,17 +136,17 @@ public:
         Entity wall_l = m_scene.create_entity("Wall left");
         wall_l.add<Component::BoundingBox2D>();
         wall_l.add<Component::Transform>(glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-        wall_l.add<Component::Quad>();
+        wall_l.add<Component::Quad>(glm::vec3(0, 0, 0));
         
         Entity wall_r = m_scene.create_entity("Wall right");
         wall_r.add<Component::BoundingBox2D>();
         wall_r.add<Component::Transform>(glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-        wall_r.add<Component::Quad>();
+        wall_r.add<Component::Quad>(glm::vec3(0, 0, 0));
 
         Entity wall_top = m_scene.create_entity("Wall top");
         wall_top.add<Component::BoundingBox2D>();
         wall_top.add<Component::Transform>(glm::vec3(-2.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-        wall_top.add<Component::Quad>();
+        wall_top.add<Component::Quad>(glm::vec3(0, 0, 0));
     }
 
 

@@ -14,12 +14,12 @@ std::ostream& operator<<(std::ostream& stream, Component::Transform& comp) {
 
 
 std::ostream& operator<<(std::ostream& stream, Component::Circle comp) {
-    stream << "Circle()";
+    stream << "Circle(color = " << comp.color << ")";
     return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, Component::Quad comp) {
-    stream << "Quad()";
+    stream << "Quad(color = " << comp.color << ")";
     return stream;
 }
 

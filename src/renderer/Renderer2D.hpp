@@ -15,18 +15,21 @@
 
 struct QuadVertex {
     glm::vec3 position;
+    glm::vec4 color;
 
     QuadVertex() = default;
-    QuadVertex(glm::vec3 p) { position = p; } 
+    QuadVertex(glm::vec3 p, glm::vec4 c) 
+        : position(p), color(c) {}
 };
 
 struct CircleData {
     glm::vec3 position;
     float radius;
+    glm::vec4 color;
 
     CircleData() = default;
-    CircleData(glm::vec3& pos, float r)
-        : position(pos), radius(r) {}
+    CircleData(glm::vec3& pos, float r, glm::vec4 c)
+        : position(pos), radius(r), color(c) {}
 };
 
 struct Renderer2DData {
@@ -69,8 +72,8 @@ public:
     void init();
 
     void begin(glm::vec2 resolution);
-    void draw_quad(glm::vec3 position, glm::vec2 size);
-    void draw_circle(glm::vec3 position, float radius);
+    void draw_quad(glm::vec3 position, glm::vec2 size, glm::vec4 color);
+    void draw_circle(glm::vec3 position, float radius, glm::vec4 color);
     void end();
 
 private:

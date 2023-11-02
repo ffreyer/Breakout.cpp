@@ -64,14 +64,24 @@ namespace Component {
 
     // Geometries
     struct Circle {
-        // color
+        glm::vec4 color;
         // maybe texture
         // maybe edge softness?
+
+        Circle() = default;
+        Circle(const Circle&) = default;
+        Circle(glm::vec3 rgb) : color(glm::vec4(rgb, 1)) {}
+        Circle(glm::vec4 rgba) : color(rgba) {}
     };
 
     struct Quad {
-        // color
+        glm::vec4 color;
         // texture
+
+        Quad() = default;
+        Quad(const Quad&) = default;
+        Quad(glm::vec3 rgb) : color(glm::vec4(rgb, 1)) {}
+        Quad(glm::vec4 rgba) : color(rgba) {}
     };
 
     // Generic

@@ -3,10 +3,12 @@
 layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
-in float[] g_radius;
+flat in float[] g_radius;
+flat in vec4[] g_color;
 
 out vec2 f_sdf;
 flat out float f_radius;
+flat out vec4 f_color;
 
 // uniform mat4 model;
 uniform mat4 view;
@@ -22,6 +24,7 @@ void generate_vertex(vec4 origin, mat4 pv, vec2 dir) {
 
     f_sdf = resolution * (clip_pos.xy - origin.xy);
     f_radius = resolution.y * g_radius[0];
+    f_color = g_color[0];
     EmitVertex();
 }
 

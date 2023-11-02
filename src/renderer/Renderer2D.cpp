@@ -16,7 +16,8 @@ void Renderer2D::init() {
     );
     m_data.circle_vertex_buffer->set_layout(GLBufferLayout({
         GLBufferElement("Position", GLType::Float3),
-        GLBufferElement("Radius", GLType::Float)
+        GLBufferElement("Radius", GLType::Float),
+        GLBufferElement("Color", GLType::Float4)
     }));
 
     m_data.circle_vertex_array = std::make_shared<GLVertexArray>();
@@ -37,6 +38,7 @@ void Renderer2D::init() {
     );
     m_data.quad_vertex_buffer->set_layout(GLBufferLayout({
         GLBufferElement("Position", GLType::Float3),
+        GLBufferElement("Color", GLType::Float4),
     }));
 
     m_data.quad_vertex_array = std::make_shared<GLVertexArray>();
@@ -77,26 +79,26 @@ void Renderer2D::begin(glm::vec2 resolution) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer2D::draw_quad(glm::vec3 pos, glm::vec2 size) {
+void Renderer2D::draw_quad(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
     if (m_data.quad_index + 6 >= m_data.max_vertices)
         render_quads();
 
-    m_data.quad_buffer[m_data.quad_index]   = QuadVertex(pos);
-    m_data.quad_buffer[m_data.quad_index+1] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f));
-    m_data.quad_buffer[m_data.quad_index+2] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f));
+    m_data.quad_buffer[m_data.quad_index]   = QuadVertex(pos, color);
+    m_data.quad_buffer[m_data.quad_index+1] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f), color);
+    m_data.quad_buffer[m_data.quad_index+2] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f), color);
 
-    m_data.quad_buffer[m_data.quad_index+3] = QuadVertex(pos + glm::vec3(size, 0.0f));
-    m_data.quad_buffer[m_data.quad_index+4] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f));
-    m_data.quad_buffer[m_data.quad_index+5] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f));
+    m_data.quad_buffer[m_data.quad_index+3] = QuadVertex(pos + glm::vec3(size, 0.0f), color);
+    m_data.quad_buffer[m_data.quad_index+4] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f), color);
+    m_data.quad_buffer[m_data.quad_index+5] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f), color);
         
     m_data.quad_index = m_data.quad_index + 6;
 }
 
-void Renderer2D::draw_circle(glm::vec3 position, float radius) {
+void Renderer2D::draw_circle(glm::vec3 position, float radius, glm::vec4 color) {
     if (m_data.circle_index == m_data.max_vertices)
         render_circles();
 
-    m_data.circle_buffer[m_data.circle_index] = CircleData(position, radius);
+    m_data.circle_buffer[m_data.circle_index] = CircleData(position, radius, color);
 
     m_data.circle_index = m_data.circle_index + 1;
 }

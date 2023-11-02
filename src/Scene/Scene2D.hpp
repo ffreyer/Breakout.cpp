@@ -55,10 +55,10 @@ public:
         return create_circle(glm::vec3(0), 0.1f);
     }
 
-    Entity create_circle(glm::vec3 pos, float r) {
+    Entity create_circle(glm::vec3 pos, float r, glm::vec4 color = glm::vec4(0.8, 0.3, 0, 1)) {
         Entity entity = create_entity("Circle Entity");
 
-        entity.add<Component::Circle>(); 
+        entity.add<Component::Circle>(color); 
         entity.add<Component::Transform>(pos, glm::vec3(r, r, 1));
         entity.add<Component::BoundingBox2D>();
         // entity.add<Component::CameraData>();
@@ -70,10 +70,10 @@ public:
         return create_quad(glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 1.0f));
     }
 
-    Entity create_quad(glm::vec3 position, glm::vec2 size) {
+    Entity create_quad(glm::vec3 position, glm::vec2 size, glm::vec4 color = glm::vec4(0.4, 0.7, 0, 1)) {
         Entity entity = create_entity("Quad Entity");
     
-        entity.add<Component::Quad>(); 
+        entity.add<Component::Quad>(color); 
         entity.add<Component::Transform>(position, glm::vec3(size, 1)); 
         entity.add<Component::BoundingBox2D>();
 
@@ -87,20 +87,18 @@ public:
         {
             auto view = m_registry.view<Component::Transform, Component::Quad>();
             for (auto entity : view) {
-                auto transform = view.get<Component::Transform>(entity);
-                // auto [transform, quad] = view.get<Component::Transform, Component::Quad>(entity);
-                m_renderer.draw_quad(transform.position, transform.scale);
+                auto [transform, quad] = view.get<Component::Transform, Component::Quad>(entity);
+                m_renderer.draw_quad(transform.position, transform.scale, quad.color);
             }
         }
 
         {
             auto view = m_registry.view<Component::Transform, Component::Circle>();
             for (auto entity : view) {
-                auto transform = view.get<Component::Transform>(entity);
-                // auto [transform, circle] = view.get<Component::Transform, Component::Circle>(entity);
+                auto [transform, circle] = view.get<Component::Transform, Component::Circle>(entity);
                 // TODO: should use scale directly
                 // ... or transform matrix
-                m_renderer.draw_circle(transform.position, transform.scale.x); 
+                m_renderer.draw_circle(transform.position, transform.scale.x, circle.color); 
             }
         }
 

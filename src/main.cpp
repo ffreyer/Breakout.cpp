@@ -132,7 +132,7 @@ public:
         m_paddle = m_scene.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
 
         // Add wall colliders
-        // TODO: static collider
+        // TODO: static colliders
         Entity wall_l = m_scene.create_entity("Wall left");
         wall_l.add<Component::BoundingBox2D>();
         wall_l.add<Component::Transform>(glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));

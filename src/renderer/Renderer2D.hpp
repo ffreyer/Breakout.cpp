@@ -15,11 +15,12 @@
 
 struct QuadVertex {
     glm::vec3 position;
+    glm::vec2 size;
     glm::vec4 color;
 
     QuadVertex() = default;
-    QuadVertex(glm::vec3 p, glm::vec4 c) 
-        : position(p), color(c) {}
+    QuadVertex(glm::vec3 p, glm::vec2 s, glm::vec4 c) 
+        : position(p), size(s), color(c) {}
 };
 
 struct CircleData {

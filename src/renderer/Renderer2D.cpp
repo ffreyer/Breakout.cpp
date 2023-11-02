@@ -38,6 +38,7 @@ void Renderer2D::init() {
     );
     m_data.quad_vertex_buffer->set_layout(GLBufferLayout({
         GLBufferElement("Position", GLType::Float3),
+        GLBufferElement("Size", GLType::Float2),
         GLBufferElement("Color", GLType::Float4),
     }));
 
@@ -47,13 +48,11 @@ void Renderer2D::init() {
     // m_data_quad_shader = GLShader({"../shaders/quad.vert", "../shaders/quad.frag"});
     m_data.quad_shader = std::make_shared<GLShader>();
     m_data.quad_shader->add_source("../assets/shaders/quad.vert");
+    m_data.quad_shader->add_source("../assets/shaders/quad.geom");
     m_data.quad_shader->add_source("../assets/shaders/quad.frag");
     m_data.quad_shader->compile();
 
     m_data.quad_buffer = new QuadVertex[m_data.max_vertices];
-
-    // TODO: this runs after destroy :(
-    // m_registry.on_destroy<entt::entity>().connect<&debug_log>();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -80,18 +79,12 @@ void Renderer2D::begin(glm::vec2 resolution) {
 }
 
 void Renderer2D::draw_quad(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
-    if (m_data.quad_index + 6 >= m_data.max_vertices)
+    if (m_data.quad_index == m_data.max_vertices)
         render_quads();
 
-    m_data.quad_buffer[m_data.quad_index]   = QuadVertex(pos, color);
-    m_data.quad_buffer[m_data.quad_index+1] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f), color);
-    m_data.quad_buffer[m_data.quad_index+2] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f), color);
-
-    m_data.quad_buffer[m_data.quad_index+3] = QuadVertex(pos + glm::vec3(size, 0.0f), color);
-    m_data.quad_buffer[m_data.quad_index+4] = QuadVertex(pos + glm::vec3(size.x, 0.0f, 0.0f), color);
-    m_data.quad_buffer[m_data.quad_index+5] = QuadVertex(pos + glm::vec3(0.0f, size.y, 0.0f), color);
+    m_data.quad_buffer[m_data.quad_index] = QuadVertex(pos, size, color);
         
-    m_data.quad_index = m_data.quad_index + 6;
+    m_data.quad_index = m_data.quad_index + 1;
 }
 
 void Renderer2D::draw_circle(glm::vec3 position, float radius, glm::vec4 color) {
@@ -140,7 +133,7 @@ void Renderer2D::render_quads() {
     m_data.quad_shader->set_uniform("projection", m_camera.m_projection);
     m_data.quad_shader->set_uniform("view", m_camera.m_view);
 
-    glDrawArrays(GL_TRIANGLES, 0, m_data.quad_index);
+    glDrawArrays(GL_POINTS, 0, m_data.quad_index);
 
     m_data.quad_index = 0;
 }

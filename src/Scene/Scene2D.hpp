@@ -2,7 +2,8 @@
 
 #include "Entity.hpp"
 #include "physics/BoundingBox2D.hpp"
-#include "../renderer/Renderer2D.hpp"
+#include "renderer/Renderer2D.hpp"
+#include "camera/OrthographicCamera.hpp"
 
 // TODO: 
 // Move definitions to cpp file
@@ -42,8 +43,14 @@ public:
 class Scene2D : public AbstractScene {
 private:
     Renderer2D m_renderer;
+    OrthographicCamera m_camera;
 
 public:
+
+    Scene2D() : 
+        m_renderer(Renderer2D()), 
+        m_camera(OrthographicCamera(-1.0f, 1.0f, -1.0f, 1.0f))
+    {}
 
     void init() {
         m_renderer.init();
@@ -82,7 +89,12 @@ public:
 
 
     void render(glm::vec2 resolution) {
-        m_renderer.begin(resolution);
+        // Fixing shorter dimension here to avoid edges +-1 being outside a standard window
+        float aspect = resolution.x / resolution.y;
+        m_camera.set_bounds(-aspect, aspect, -1.0f, 1.0f);
+        m_camera.recalculate_view();
+
+        m_renderer.begin(m_camera.m_projectionview);
 
         {
             auto view = m_registry.view<Component::Transform, Component::Quad>();

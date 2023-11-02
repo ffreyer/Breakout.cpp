@@ -4,8 +4,6 @@
 
 #include <glm/glm.hpp>
 
-#include "camera/OrthographicCamera.hpp"
-
 #include "../opengl/Shader.hpp"
 #include "../opengl/VertexArray.hpp"
 
@@ -63,16 +61,16 @@ struct Renderer2DData {
 
 class Renderer2D {
 private:
-    OrthographicCamera m_camera;
     Renderer2DData m_data;
+    glm::mat4 m_projectionview;
     
 public:
-    Renderer2D();
+    Renderer2D() = default;
     ~Renderer2D();
 
     void init();
 
-    void begin(glm::vec2 resolution);
+    void begin(glm::mat4& projectionview);
     void draw_quad(glm::vec3 position, glm::vec2 size, glm::vec4 color);
     void draw_circle(glm::vec3 position, float radius, glm::vec4 color);
     void end();

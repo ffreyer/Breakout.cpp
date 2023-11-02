@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -11,7 +12,7 @@
 class MyApp : public Application {
 private:
     Scene2D m_scene;
-    Entity m_ball;
+    std::vector<Entity> m_balls;
     Entity m_paddle;
     uint16_t m_score = 0;
     bool m_paused = false;
@@ -29,26 +30,27 @@ public:
             return;
 
         // Physics update (TODO: cleanup)
-        {
-            entt::registry& reg = m_scene.get_registry();
-
-            Component::Transform& c_transform = m_ball.get<Component::Transform>();
-            Component::Velocity& c_vel = m_ball.get<Component::Velocity>();
+        entt::registry& reg = m_scene.get_registry();
+        
+        for (size_t i = 0; i < m_balls.size(); i++) {
+            const Entity& ball = m_balls[i];
+            Component::Transform& b_transform = ball.get<Component::Transform>();
+            Component::Velocity&  b_vel = ball.get<Component::Velocity>();
 
             // TODO: fix
-            glm::vec2 radius = glm::vec2(c_transform.scale);
-            glm::vec2 delta = delta_time * c_vel.velocity;
-            glm::vec3 new_pos = c_transform.position + glm::vec3(delta, 0.0f);
+            glm::vec2 radius = glm::vec2(b_transform.scale);
+            glm::vec2 delta = delta_time * b_vel.velocity;
+            glm::vec3 new_pos = b_transform.position + glm::vec3(delta, 0.0f);
 
             auto colliders = reg.view<Component::Transform, Component::BoundingBox2D>();
 
-            for (const auto collider : colliders) {
-                if (collider == m_ball.get_entity())
+            for (const auto& collider : colliders) {
+                if (collider == ball.get_entity())
                     continue;
 
                 auto [transform, bbox] = colliders.get<Component::Transform, Component::BoundingBox2D>(collider);
                 bbox.set(transform.position, transform.scale); // TODO: static version?
-                HitResult result = bbox.collision_parameter(c_transform.position, radius, delta);
+                HitResult result = bbox.collision_parameter(b_transform.position, radius, delta);
 
                 if (result.hit && (0.0 <= result.parameter) && (result.parameter <= 1.0)) {
                     if (collider == m_paddle.get_entity()) {
@@ -57,23 +59,28 @@ public:
                     } else if (reg.all_of<Component::Destructable>(collider)) {
                         m_score++;
                         reg.destroy(collider);
+                        create_ball();
                         std::cout << "Destroyed Block. Score: " << m_score << std::endl;
                     }
                     
-                    glm::vec2 new_v = result.reflection_matrix * c_vel.velocity;
-                    new_pos = c_transform.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
-                    c_vel.velocity = new_v;
+                    glm::vec2 new_v = result.reflection_matrix * b_vel.velocity;
+                    new_pos = b_transform.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
+                    b_vel.velocity = new_v;
                     break;
                 }
             }   
-            // std::cout << std::endl;
-            c_transform.position = new_pos;
+            b_transform.position = new_pos;
+
+            if (new_pos.y < -1.1f) {
+                ball.destroy();
+                m_balls.erase(m_balls.begin() + i);
+                i--;
+            }
         }
 
         // Check gameover
         {
-            Component::Transform c_transform = m_ball.get<Component::Transform>();
-            if (c_transform.position.y < -1.0f) {
+            if (m_balls.empty()) {
                 std::cout << "Gameover" << std::endl;
                 m_paused = true;
             }
@@ -98,13 +105,18 @@ public:
         }
     }
 
+    void create_ball(glm::vec2 pos = glm::vec2(0), glm::vec2 vel = glm::vec2(0.1f, 1.0f)) {
+        Entity ball = m_scene.create_circle(glm::vec3(pos, 0), 0.02f);
+        ball.add<Component::Velocity>(vel);
+        m_balls.push_back(ball);
+    }
+
     void reset() {
         m_score = 0;
         m_scene.clear();
 
         // Add Ball
-        m_ball = m_scene.create_circle(glm::vec3(0), 0.02f);
-        m_ball.add<Component::Velocity>(glm::vec2(0.1f, 1.0f));
+        create_ball();
 
         // Add Bricks
         int columns = 10, rows = 6;

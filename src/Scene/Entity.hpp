@@ -61,4 +61,8 @@ public:
     entt::entity get_entity() const {
         return m_entity;
     }
+
+    void destroy() const {
+        m_registry->destroy(m_entity);
+    }
 };

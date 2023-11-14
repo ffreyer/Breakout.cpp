@@ -55,6 +55,9 @@ namespace Component {
         void translate_by(glm::vec3 v) {
             position = position + v;
         }
+        void translate_by(glm::vec2 v) {
+            position = position + glm::vec3(v, 0);
+        }
         void scale_by(glm::vec3 v) {
             scale = scale * v;
         }

@@ -5,6 +5,7 @@
 
 #include "Scene/Scene2D.hpp"
 #include "physics/BoundingBox2D.hpp"
+#include "physics/Physics2D.hpp"
 #include "core/Application.hpp"
 #include "core/print.hpp"
 #include "core/logging.hpp"
@@ -16,11 +17,13 @@ private:
     Entity m_paddle;
     uint16_t m_score = 0;
     bool m_paused = false;
+    PhysicsEngine2D m_physics;
 
 public:
     MyApp() {
         if (init("Test Window", 800, 600)) {
             m_scene.init();
+            m_physics.init(m_scene.get_registry());
             reset();
         }
     }
@@ -29,54 +32,32 @@ public:
         if (m_paused)
             return;
 
-        // Physics update (TODO: cleanup)
-        entt::registry& reg = m_scene.get_registry();
-        
-        for (size_t i = 0; i < m_balls.size(); i++) {
-            const Entity& ball = m_balls[i];
-            Component::Transform& b_transform = ball.get<Component::Transform>();
-            Component::Velocity&  b_vel = ball.get<Component::Velocity>();
+        // Need to manually trigger updates for objects we move ourself :/
+        m_physics.update_entity(m_paddle.get_entity());
 
-            // TODO: fix
-            glm::vec2 radius = glm::vec2(b_transform.scale);
-            glm::vec2 delta = delta_time * b_vel.velocity;
-            glm::vec3 new_pos = b_transform.position + glm::vec3(delta, 0.0f);
-
-            auto colliders = reg.view<Component::Transform, Component::BoundingBox2D>();
-
-            for (const auto& collider : colliders) {
-                if (collider == ball.get_entity())
-                    continue;
-
-                auto [transform, bbox] = colliders.get<Component::Transform, Component::BoundingBox2D>(collider);
-                bbox.set(transform.position, transform.scale); // TODO: static version?
-                HitResult result = bbox.collision_parameter(b_transform.position, radius, delta);
-
-                if (result.hit && (0.0 <= result.parameter) && (result.parameter <= 1.0)) {
-                    if (collider == m_paddle.get_entity()) {
-                        // Ok the original game looks like it tries to do correct reflections
-                        // but fails near the edge?
-                    } else if (reg.all_of<Component::Destructable>(collider)) {
-                        m_score++;
-                        reg.destroy(collider);
-                        create_ball();
-                        std::cout << "Destroyed Block. Score: " << m_score << std::endl;
+        // on collision callback
+        auto cb = [this](entt::registry& reg, entt::entity e){
+            // delete balls outside the scene
+            for (auto it = this->m_balls.begin(); it != this->m_balls.end(); it++) {
+                auto ball = *it;
+                if (e == ball.get_entity()) {
+                    auto transform = ball.get<Component::Transform>();
+                    if (transform.position.y < -1.0f) {
+                        m_balls.erase(it);
+                        break;
                     }
-                    
-                    glm::vec2 new_v = result.reflection_matrix * b_vel.velocity;
-                    new_pos = b_transform.position + glm::vec3(result.parameter * delta + delta_time * (1 - result.parameter) * new_v, 0.0f);
-                    b_vel.velocity = new_v;
-                    break;
                 }
-            }   
-            b_transform.position = new_pos;
-
-            if (new_pos.y < -1.1f) {
-                ball.destroy();
-                m_balls.erase(m_balls.begin() + i);
-                i--;
             }
-        }
+
+            // TODO: move to physics engine?
+            // destroy destructables
+            if (reg.all_of<Component::Destructable>(e)){
+                reg.destroy(e);
+            }
+        };
+
+        // Simulate physics world
+        m_physics.process(delta_time, cb);
 
         // Check gameover
         {
@@ -106,14 +87,16 @@ public:
     }
 
     void create_ball(glm::vec2 pos = glm::vec2(0), glm::vec2 vel = glm::vec2(0.1f, 1.0f)) {
-        Entity ball = m_scene.create_circle(glm::vec3(pos, 0), 0.02f);
-        ball.add<Component::Velocity>(vel);
+        Entity ball = m_scene.create_circle("Ball", glm::vec3(pos, 0), 0.02f);
+        ball.add<Component::Collision2D>(glm::vec2(0.0f), 1.0f, 1.0f);
+        ball.add<Component::Motion2D>(vel);
         m_balls.push_back(ball);
     }
 
     void reset() {
         m_score = 0;
         m_scene.clear();
+        m_physics.clear();
 
         // Add Ball
         create_ball();
@@ -128,37 +111,35 @@ public:
             for (int j = 0; j < rows; j++) {
                 // aspect rescaling only works on init
                 float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
-                Entity e = m_scene.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
+                char name[16];
+                sprintf_s(name, 16, "Brick[%i, %i]", i, j);
+                Entity e = m_scene.create_quad(name, glm::vec3(x, y, 0.0f), brick_scale);
+                e.add<Component::Collision2D>(Component::Collision2D::Rect2D);
                 e.add<Component::Destructable>();
             }
         }
-        // {
-        //     int i = 5, j = 6;
-        //     float x = (brick_scale.x + 0.01f) * i - 0.995f;
-        //     float y =  1.0f - (brick_scale.y + 0.01f / aspect) * (j + 1.0f); 
-        //     Entity e = m_renderer.create_quad(glm::vec3(x, y, 0.0f), brick_scale);
-        //     e.add<Component::Destructable>();
-        // }
 
         // Add paddle
-        m_paddle = m_scene.create_quad(glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
+        m_paddle = m_scene.create_quad("Paddle", glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
+        m_paddle.add<Component::Collision2D>(Component::Collision2D::Rect2D);
 
         // Add wall colliders
-        // TODO: static colliders
         Entity wall_l = m_scene.create_entity("Wall left");
-        wall_l.add<Component::BoundingBox2D>();
+        wall_l.add<Component::Collision2D>(Component::Collision2D::Rect2D);
         wall_l.add<Component::Transform>(glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
         wall_l.add<Component::Quad>(glm::vec3(0, 0, 0));
         
         Entity wall_r = m_scene.create_entity("Wall right");
-        wall_r.add<Component::BoundingBox2D>();
+        wall_r.add<Component::Collision2D>(Component::Collision2D::Rect2D);
         wall_r.add<Component::Transform>(glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
         wall_r.add<Component::Quad>(glm::vec3(0, 0, 0));
 
         Entity wall_top = m_scene.create_entity("Wall top");
-        wall_top.add<Component::BoundingBox2D>();
+        wall_top.add<Component::Collision2D>(Component::Collision2D::Rect2D);
         wall_top.add<Component::Transform>(glm::vec3(-2.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 1.0f));
         wall_top.add<Component::Quad>(glm::vec3(0, 0, 0));
+
+        m_physics.construct();
     }
 
 
@@ -166,14 +147,12 @@ private:
     void update_paddle_position(MouseMoveEvent& e) { return update_paddle_position(); }
     void update_paddle_position(WindowResizeEvent& e) { return update_paddle_position(); }
     void update_paddle_position() {
-        float x, w;
-        x = get_mouse_position().x;
-        w = (float) get_window_size().x;
+        float x = get_mouse_position().x;
+        float w = (float) get_window_size().x;
+        float aspect = (float) w / get_window_size().y;
 
-        Component::BoundingBox2D& bbox = m_paddle.get<Component::BoundingBox2D>();
         Component::Transform& transform = m_paddle.get<Component::Transform>();
-        transform.position.x = glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f - 0.5f * transform.scale.x;
-        bbox.translate_lb_to(glm::vec2(transform.position));
+        transform.position.x = aspect * (glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f) - 0.5f * transform.scale.x;
     }
 };
 

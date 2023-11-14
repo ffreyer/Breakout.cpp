@@ -63,12 +63,15 @@ public:
     }
 
     Entity create_circle(glm::vec3 pos, float r, glm::vec4 color = glm::vec4(0.8, 0.3, 0, 1)) {
-        Entity entity = create_entity("Circle Entity");
+        return create_circle("Circle Entity", pos, r, color);
+    };
+
+    Entity create_circle(std::string name, glm::vec3 pos, float r, glm::vec4 color = glm::vec4(0.8, 0.3, 0, 1)) {
+        Entity entity = create_entity(name);
 
         entity.add<Component::Circle>(color); 
         entity.add<Component::Transform>(pos, glm::vec3(r, r, 1));
         entity.add<Component::BoundingBox2D>();
-        // entity.add<Component::CameraData>();
 
         return entity;
     };
@@ -78,7 +81,11 @@ public:
     }
 
     Entity create_quad(glm::vec3 position, glm::vec2 size, glm::vec4 color = glm::vec4(0.4, 0.7, 0, 1)) {
-        Entity entity = create_entity("Quad Entity");
+        return create_quad("Quad Entity", position, size, color);
+    }
+
+    Entity create_quad(std::string name, glm::vec3 position, glm::vec2 size, glm::vec4 color = glm::vec4(0.4, 0.7, 0, 1)) {
+        Entity entity = create_entity(name);
     
         entity.add<Component::Quad>(color); 
         entity.add<Component::Transform>(position, glm::vec3(size, 1)); 

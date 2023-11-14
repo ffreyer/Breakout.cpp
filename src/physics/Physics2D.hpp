@@ -41,6 +41,7 @@ namespace Component {
 
             BoundingShape() = delete;
             BoundingShape(uint8_t s) {
+                shape = s; 
                 if (s == Rect2D) {
                     left = 0.0f; right = 1.0f; bottom = 0.0f; top = 1.0f;
                 } else if (s == Circle) {

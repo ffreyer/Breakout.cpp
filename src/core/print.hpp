@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& stream, const glm::mat<Lx, Ly, T, Q>& M) 
 
 template<int L, typename T, glm::qualifier Q>
 std::ostream& operator<<(std::ostream& stream, const glm::vec<L, T, Q> v) {
-    stream << "vec4(";
+    stream << "vec" << L << "(";
     for (int j = 0; j < L-1; j++)
         stream << v[j] << ", ";
     stream << v[L-1] << ")";

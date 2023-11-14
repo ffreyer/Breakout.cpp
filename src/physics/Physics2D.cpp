@@ -331,8 +331,8 @@ void PhysicsEngine2D::collision(glm::vec2 p1, glm::vec2 v1, float r1, glm::vec2 
     // When it collides with a corner that corner can be viewed as a
     // point (or R = 0 circle). Resolve those collisions here.
     // They replace the existing hit if they are earlier in time
-    for (float w : {-wh2.x, wh2.x}) {
-        for (float h : {-wh2.y, wh2.y}) {
+    for (float w : {-0.5f * wh2.x, 0.5f * wh2.x}) {
+        for (float h : {-0.5f * wh2.y, 0.5f * wh2.y}) {
             float t = collision(p1, v1, r1, p2 + glm::vec2(w, h), v2);
             if ((t < hit.time) && (t > 0.0f)) {
                 hit.time = t;

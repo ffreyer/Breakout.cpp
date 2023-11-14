@@ -4,6 +4,8 @@
 
 // colored printing for very basic logging
 namespace LOG {
+    static const char* reset = "\e[0m";
+
     static const char* black = "\e[0;30m";
     static const char* BLACK = "\e[1;30m";
 
@@ -36,5 +38,6 @@ namespace LOG {
     #define INFO  LOG::__log(LOG::cyan)
     #define WARN  LOG::__log(LOG::yellow)
     #define ERROR LOG::__log(LOG::red)
+    #define ENDLOG LOG::_log(LOG::reset) << std::endl
 }
 

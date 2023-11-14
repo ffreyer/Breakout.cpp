@@ -32,9 +32,6 @@ public:
         if (m_paused)
             return;
 
-        // Need to manually trigger updates for objects we move ourself :/
-        m_physics.update_entity(m_paddle.get_entity());
-
         // on collision callback
         auto cb = [this](entt::registry& reg, entt::entity e){
             // delete balls outside the scene
@@ -153,6 +150,9 @@ private:
 
         Component::Transform& transform = m_paddle.get<Component::Transform>();
         transform.position.x = aspect * (glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f) - 0.5f * transform.scale.x;
+
+        // Need to manually trigger updates for objects we move ourself :/
+        m_physics.update_entity(m_paddle.get_entity());
     }
 };
 

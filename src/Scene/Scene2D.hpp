@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Entity.hpp"
-#include "physics/BoundingBox2D.hpp"
 #include "renderer/Renderer2D.hpp"
 #include "camera/OrthographicCamera.hpp"
 
@@ -71,7 +70,6 @@ public:
 
         entity.add<Component::Circle>(color); 
         entity.add<Component::Transform>(pos, glm::vec3(r, r, 1));
-        entity.add<Component::BoundingBox2D>();
 
         return entity;
     };
@@ -89,7 +87,6 @@ public:
     
         entity.add<Component::Quad>(color); 
         entity.add<Component::Transform>(position, glm::vec3(size, 1)); 
-        entity.add<Component::BoundingBox2D>();
 
         return entity;
     }

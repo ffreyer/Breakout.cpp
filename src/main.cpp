@@ -4,7 +4,6 @@
 #include <glm/glm.hpp>
 
 #include "Scene/Scene2D.hpp"
-#include "physics/BoundingBox2D.hpp"
 #include "physics/Physics2D.hpp"
 #include "core/Application.hpp"
 #include "core/print.hpp"

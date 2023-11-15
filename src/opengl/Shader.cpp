@@ -10,14 +10,12 @@ std::string file_to_string(const char* filepath);
 
 // Class Functions
 GLShader::GLShader(std::initializer_list<const char*> paths) {
-    std::cout << "Shader Constructor" << std::endl;
     for (const char* path : paths)
         add_source(path);
     compile();
 }
 
 GLShader::~GLShader() {
-    std::cout << "Shader Destructor" << std::endl;
     if (m_id)
         glDeleteProgram(m_id);
 }

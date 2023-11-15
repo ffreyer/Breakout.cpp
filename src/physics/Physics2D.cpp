@@ -153,8 +153,12 @@ void PhysicsEngine2D::resolve_hit(HitData& hit) {
 
     // Resolve callbacks
     // TODO: should/can we do this earlier and potnetially avoid doing some calculations?
-    for (entt::entity e : hit.entities)
-        m_registry->get<Component::Collision2D>(e).on_collision(*m_registry, e);
+    {
+        Entity e1 = Entity(m_registry, hit.entity1);
+        Entity e2 = Entity(m_registry, hit.entity2);
+        e1.get<Component::Collision2D>().on_collision(e1, e2);
+        e2.get<Component::Collision2D>().on_collision(e2, e1);
+    }
 }
 
 

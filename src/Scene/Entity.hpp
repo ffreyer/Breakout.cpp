@@ -14,11 +14,14 @@ private:
 public:
     Entity() = default;
 
-    Entity(entt::registry& registry, entt::entity entity) : 
-        m_registry(&registry), m_entity(entity)
-    {
-        // INFO << "Created entity " << (uint32_t) m_entity << std::endl;
-    }
+    Entity(entt::registry* registry, entt::entity entity)
+        :  m_registry(registry), m_entity(entity)
+    {}
+
+    Entity(entt::registry& registry, entt::entity entity)
+        : m_registry(&registry), m_entity(entity)
+    {}
+    
     Entity(const Entity& other) = default;
 
     ~Entity() {

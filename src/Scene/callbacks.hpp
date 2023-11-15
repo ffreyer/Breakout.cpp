@@ -5,17 +5,17 @@
 #include <entt/entt.hpp>
 
 #include "Components.hpp"
+#include "Entity.hpp"
 
 namespace Callback {
-    typedef std::function<void(entt::registry&, entt::entity)> Function;
+    typedef std::function<void(Entity, Entity)> Function;
     
-    
-    static const void do_nothing(entt::registry& reg, entt::entity e) { return; }
-    static const void destroy(entt::registry& reg, entt::entity e) { reg.destroy(e); }
-    static const void log(entt::registry& reg, entt::entity e) {
-        std::cout << "[LOG] Entity " << (uint32_t) e;
-        if (reg.all_of<Component::Name>(e))
-            std::cout << " " << reg.get<Component::Name>(e);
+    [[maybe_unused]] static const void do_nothing(Entity e, Entity other) { return; }
+    [[maybe_unused]] static const void destroy(Entity e, Entity other) { e.destroy(); }
+    [[maybe_unused]] static const void log(Entity e, Entity other) {
+        std::cout << "[LOG] Entity " << (uint32_t) e.get_entity();
+        if (e.has<Component::Name>())
+            std::cout << " " << e.get<Component::Name>();
         std::cout << std::endl;
     }
 }

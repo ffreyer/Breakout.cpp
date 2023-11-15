@@ -21,7 +21,7 @@ public:
     Entity(entt::registry& registry, entt::entity entity)
         : m_registry(&registry), m_entity(entity)
     {}
-    
+
     Entity(const Entity& other) = default;
 
     ~Entity() {
@@ -67,5 +67,12 @@ public:
 
     void destroy() const {
         m_registry->destroy(m_entity);
+    }
+
+    friend inline bool operator==(const Entity& e1, const Entity& e2) {
+        return (e1.m_registry == e2.m_registry) && (e1.m_entity == e2.m_entity);
+    }
+    friend inline bool operator!=(const Entity& e1, const Entity& e2) {
+        return !(e1 == e2);
     }
 };

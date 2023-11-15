@@ -55,6 +55,17 @@ namespace Component {
             BoundingShape(glm::vec2 o) : shape(Circle), origin(o), radius(1.0f) {};
             BoundingShape(glm::vec2 o, float r) : shape(Circle), origin(o), radius(r) {};
             BoundingShape(float l, float r, float b, float t) : shape(Rect2D), left(l), right(r), bottom(b), top(t) {}
+
+            friend std::ostream& operator<<(std::ostream& stream, BoundingShape& bb) {
+                if (bb.shape == Collision2D::Rect2D) {
+                    stream << "BoundingBox(" << bb.left << ".." << bb.right << 
+                        ", " << bb.bottom << ".." << bb.top << ")";
+                } else {
+                    stream << "BoundingCircle(" << bb.origin << ", " << bb.radius << ")";
+
+                }
+                return stream;
+            }
         };
 
         BoundingShape bbox;
@@ -229,8 +240,7 @@ public:
 
     void resolve_hit(HitData& hit);
 
-private:
-
+    // keeping this public for testing purposes
     // TODO: Ignoring rotation for now
     // Rect with pos being center, size being full width and height
     static std::tuple<glm::vec2, glm::vec2> convert_as_rect(Component::Transform& transform, Component::Collision2D::BoundingShape& bb) {
@@ -248,6 +258,7 @@ private:
         return std::tuple(pos, radius);
     }
 
+private:
 
     // Search for earliest collision of "entity" and update collisions invalidated as a result
     void calculate_collision(entt::entity entity);

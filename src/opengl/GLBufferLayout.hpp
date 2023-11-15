@@ -50,7 +50,7 @@ static unsigned int gltype_length(GLType type) {
 	return 0;
 }
 
-static GLenum gl_native_type(GLType type) {
+[[maybe_unused]] static GLenum gl_native_type(GLType type) {
 	switch (type) {
         case GLType::Bool: return GL_BOOL;
         case GLType::Int:  return GL_INT;

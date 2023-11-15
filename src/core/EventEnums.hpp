@@ -10,7 +10,7 @@ enum class EventType {
 	MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 };
 
-static const char* enum_to_string(EventType type) {
+[[maybe_unused]] static const char* enum_to_string(EventType type) {
 	static const char* conversion[] = {
 		"None",
 		"WindowClose", "WindowResize", "WindowFocus", "WindowLostFocus", "WindowMoved",

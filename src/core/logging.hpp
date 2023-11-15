@@ -30,7 +30,7 @@ namespace LOG {
     static const char* white = "\e[0;37m";
     static const char* WHITE = "\e[1;37m";
 
-    static std::ostream& __log(const char* color) {
+    [[maybe_unused]] static std::ostream& __log(const char* color) {
         return (std::cout << color);
     }
 

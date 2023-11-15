@@ -29,13 +29,3 @@ std::ostream& operator<<(std::ostream& stream, Component::CameraData comp) {
     stream << "CameraData(...)";
     return stream;
 }
-
-std::ostream& operator<<(std::ostream& stream, Component::Velocity comp) {
-    stream << "Velocity(" << comp.velocity << ")";
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, Component::Destructable comp) {
-    stream << "Destructable()";
-    return stream;
-}

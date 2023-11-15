@@ -31,32 +31,22 @@ public:
         if (m_paused)
             return;
 
-        // on collision callback
-        auto cb = [this](entt::registry& reg, entt::entity e){
-            // delete balls outside the scene
-            for (auto it = this->m_balls.begin(); it != this->m_balls.end(); it++) {
-                auto ball = *it;
-                if (e == ball.get_entity()) {
-                    auto transform = ball.get<Component::Transform>();
-                    if (transform.position.y < -1.0f) {
-                        m_balls.erase(it);
-                        break;
-                    }
-                }
-            }
-
-            // TODO: move to physics engine?
-            // destroy destructables
-            if (reg.all_of<Component::Destructable>(e)){
-                reg.destroy(e);
-            }
-        };
-
         // Simulate physics world
-        m_physics.process(delta_time, cb);
+        m_physics.process(delta_time);
 
         // Check gameover
         {
+            // Delete out of bounds balls
+            for (auto it = this->m_balls.begin(); it != this->m_balls.end(); it++) {
+                auto ball = *it;
+                auto transform = ball.get<Component::Transform>();
+                if (transform.position.y < -1.0f) {
+                    m_balls.erase(it);
+                    break;
+                }
+            }
+
+            // If no balls exist we dead
             if (m_balls.empty()) {
                 std::cout << "Gameover" << std::endl;
                 m_paused = true;
@@ -110,8 +100,7 @@ public:
                 char name[16];
                 sprintf_s(name, 16, "Brick[%i, %i]", i, j);
                 Entity e = m_scene.create_quad(name, glm::vec3(x, y, 0.0f), brick_scale);
-                e.add<Component::Collision2D>(Component::Collision2D::Rect2D);
-                e.add<Component::Destructable>();
+                e.add<Component::Collision2D>(Component::Collision2D::Rect2D, Callback::destroy);
             }
         }
 
@@ -143,12 +132,15 @@ private:
     void update_paddle_position(MouseMoveEvent& e) { return update_paddle_position(); }
     void update_paddle_position(WindowResizeEvent& e) { return update_paddle_position(); }
     void update_paddle_position() {
+        Component::Transform& transform = m_paddle.get<Component::Transform>();
+
         float x = get_mouse_position().x;
         float w = (float) get_window_size().x;
         float aspect = (float) w / get_window_size().y;
+        float sx = 0.5f * transform.scale.x;
 
-        Component::Transform& transform = m_paddle.get<Component::Transform>();
-        transform.position.x = aspect * (glm::clamp(x / w, 0.05f, 0.95f) * 2.0f - 1.0f) - 0.5f * transform.scale.x;
+        float cam_x = aspect * (x / w  * 2.0f - 1.0f);
+        transform.position.x = glm::clamp(cam_x, sx - 1.0f, 1.0f - sx) - sx;
 
         // Need to manually trigger updates for objects we move ourself :/
         m_physics.update_entity(m_paddle.get_entity());

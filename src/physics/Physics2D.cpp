@@ -68,6 +68,46 @@ void PhysicsEngine2D::construct() {
     }
 }
 
+// run simulation for delta_time
+void PhysicsEngine2D::process(float delta_time) {
+
+    float local_delta_time = delta_time;
+    while (!m_hitlist.empty()) {
+        // move newest to back
+        std::pop_heap(m_hitlist.begin(), m_hitlist.end(), std::greater<HitData>{});
+
+        // if newest is past delta time revert and exit
+        HitData& hit = m_hitlist.back();
+        if (hit.time > local_delta_time) {
+            std::push_heap(m_hitlist.begin(), m_hitlist.end(), std::greater<HitData>{});
+            break;
+        }
+        // otherwise remove the hit from hitlist
+        m_hitlist.pop_back();
+        local_delta_time = local_delta_time - hit.time;
+
+        // and process it
+        resolve_hit(hit);
+
+        // Calculate next hit for the entites of the resolved hit
+        calculate_collision(hit.entity1);
+        if (hit.dynamic)
+            calculate_collision(hit.entity2);
+    }
+
+    // Advance all particles to pos(delta_time)
+    auto movables = m_registry->view<Component::Transform, Component::Motion2D>();
+    for (entt::entity e : movables) {
+        auto [transform, movement] = movables.get(e);
+        transform.translate_by(local_delta_time * movement.velocity);
+    }
+
+    // Advance time
+    for (HitData& hit : m_hitlist)
+        hit.time -= local_delta_time; 
+}
+
+
 void PhysicsEngine2D::resolve_hit(HitData& hit) {
     // Update positions
     auto view = m_registry->view<Component::Transform, Component::Motion2D>();
@@ -110,6 +150,11 @@ void PhysicsEngine2D::resolve_hit(HitData& hit) {
     m_earliest[hit.entity1] = INVALID_TIME;
     if (hit.dynamic)
         m_earliest[hit.entity2] = INVALID_TIME;
+
+    // Resolve callbacks
+    // TODO: should/can we do this earlier and potnetially avoid doing some calculations?
+    for (entt::entity e : hit.entities)
+        m_registry->get<Component::Collision2D>(e).on_collision(*m_registry, e);
 }
 
 

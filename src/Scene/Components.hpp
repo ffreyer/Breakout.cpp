@@ -95,13 +95,6 @@ namespace Component {
         glm::mat4 projectionview;
         glm::vec2 resolution;
     };
-
-    struct Velocity {
-        glm::vec2 velocity;
-    };
-    
-    struct Destructable {
-    };
 }
 
 std::ostream& operator<<(std::ostream& stream, Component::Name& comp);
@@ -109,5 +102,3 @@ std::ostream& operator<<(std::ostream& stream, Component::Transform& comp);
 std::ostream& operator<<(std::ostream& stream, Component::Circle comp);
 std::ostream& operator<<(std::ostream& stream, Component::Quad comp);
 std::ostream& operator<<(std::ostream& stream, Component::CameraData comp);
-std::ostream& operator<<(std::ostream& stream, Component::Velocity comp);
-std::ostream& operator<<(std::ostream& stream, Component::Destructable comp);

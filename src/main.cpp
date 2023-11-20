@@ -33,6 +33,7 @@ public:
 
         // Simulate physics world
         m_physics.process(delta_time);
+        m_scene.update(delta_time);
 
         // Check gameover
         {
@@ -79,6 +80,8 @@ public:
         m_balls.push_back(ball);
     }
 
+    void screen_shake() { m_scene.screen_shake(); }
+
     void reset() {
         m_score = 0;
         m_scene.clear();
@@ -92,6 +95,11 @@ public:
         float aspect = 600.0f / 800.0f;
         glm::vec2 brick_scale = glm::vec2(0.19, 0.04);
 
+        Callback::Function on_brick_collision = [this](Entity& e, Entity& other){
+            Callback::destroy(e, other);
+            this->screen_shake();
+        };
+
         for (int i = 0; i < columns; i++) {
             float x = (brick_scale.x + 0.01f) * i - 0.995f;
             for (int j = 0; j < rows; j++) {
@@ -100,7 +108,7 @@ public:
                 char name[16];
                 sprintf_s(name, 16, "Brick[%i, %i]", i, j);
                 Entity e = m_scene.create_quad(name, glm::vec3(x, y, 0.0f), brick_scale);
-                e.add<Component::Collision2D>(Component::Collision2D::Rect2D, Callback::destroy);
+                e.add<Component::Collision2D>(Component::Collision2D::Rect2D, on_brick_collision);
             }
         }
 
@@ -126,7 +134,6 @@ public:
 
         m_physics.construct();
     }
-
 
 private:
     void update_paddle_position(MouseMoveEvent& e) { return update_paddle_position(); }

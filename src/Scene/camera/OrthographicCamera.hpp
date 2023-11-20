@@ -12,7 +12,6 @@ private:
     glm::vec3 m_position = {0.0f, 0.0f, 0.0f};
     float m_rotation = 0.0f;
 
-
 public:
     OrthographicCamera(float left, float right, float bottom, float top)
         : m_left(left), m_right(right), m_bottom(bottom), m_top(top)    
@@ -47,7 +46,6 @@ public:
         m_rotation = m_rotation + angle;
         recalculate_view();
     }
-
 
 // From parent
     void recalculate_view() {

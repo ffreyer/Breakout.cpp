@@ -37,12 +37,41 @@ public:
     }
 };
 
+#include <cmath>
+    
+struct ScreenShake {
+    float intensity = 0.03f;
+    float damping = 5.0f;
+    float frequency = 50.0f;
 
+    void reset() {
+        m_time = -0.05f;
+    }
+
+    void update(float delta_time) {
+        m_time += delta_time;
+    }
+
+    float get_offset() {
+        m_last_offset = m_time > 10 * damping ? 0.0f : intensity * sin(frequency * m_time) * std::min(1.0f, exp(-m_time * damping));
+        return m_last_offset;
+    }
+
+    float get_delta() {
+        float last = m_last_offset;
+        return get_offset() - last;
+    }
+
+private:
+    float m_time = 10000000.0f;
+    float m_last_offset = 0.0f;
+};
 
 class Scene2D : public AbstractScene {
 private:
     Renderer2D m_renderer;
     OrthographicCamera m_camera;
+    ScreenShake m_shake;
 
 public:
 
@@ -91,12 +120,16 @@ public:
         return entity;
     }
 
+    void update(float delta_time) {
+        m_shake.update(delta_time);
+    }
 
     void render(glm::vec2 resolution) {
         // Fixing shorter dimension here to avoid edges +-1 being outside a standard window
         float aspect = resolution.x / resolution.y;
         m_camera.set_bounds(-aspect, aspect, -1.0f, 1.0f);
-        m_camera.recalculate_view();
+        float shake_delta = m_shake.get_delta();
+        m_camera.translate_by(glm::vec3(0.0f, shake_delta, 0.0f));
 
         m_renderer.begin(m_camera.m_projectionview);
 
@@ -121,6 +154,7 @@ public:
         m_renderer.end();
     }
 
+    void screen_shake() { m_shake.reset(); }
 };
 
 

@@ -48,27 +48,3 @@ REM %defines%
 
 
 ECHO "Done."
-
-:: OK, let's try to actually understand this
-:: up to the for loop everything's easy enough
-::
-:: FOR /R %%f in (*.cpp) do (
-::     SET cFilenames=!cFilenames! "%%f"
-:: )
-::
-:: %%f is the variable (full path)
-:: %% makes the loop run in file, % in cmd prompt
-:: (*.cpp) is the set, regex matching cpp files I suppose
-:: /R runs the loop in every recursive directory
-:: !cFilenames! expands at run time rather than parse time like %cFilenames% would
-
-:: glfw build
-:: - create build folder in glfw for build output
-
-:: mkdir dependencies/glfw/build
-:: cmake -S dependencies/glfw -B dependencies/glfw/build -D BUILD_SHARED_LIBS=ON -D GLFW_BUILD_EXAMPLES=FALSE -D GLFW_BUILD_TESTS=FALSE GLFW_BUILD_DOCS=FALSE 
-
-:: cd dependencies/glfw/build
-:: make
-::  OR
-:: cmake --build dependencies/glfw/build

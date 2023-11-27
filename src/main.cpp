@@ -1,34 +1,40 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 #include <glm/glm.hpp>
 
 #include "Scene/Scene2D.hpp"
-#include "physics/Physics2D.hpp"
+#include "physics/Physics.hpp"
 #include "core/Application.hpp"
 #include "core/print.hpp"
 #include "core/logging.hpp"
 
 namespace Component {
+    // TODO probably squash these into a tag component and just if-else?
     struct PlayBall {};
+    struct PowerUp {};
+    struct Brick {};
+    struct Paddle {};
 }
 
+// TODO: maybe move
+float randf() { return (float) std::rand() / (float) RAND_MAX; }
 
 class MyApp : public Application {
 private:
     Scene2D m_scene;
-    std::vector<Entity> m_balls;
-    Entity m_paddle;
+    Physics2D m_physics;
     uint16_t m_score = 0;
     bool m_paused = false;
 
 public:
     Entity m_paddle;
-    PhysicsEngine2D m_physics;
     int m_ball_count = 0;
 
     MyApp() {
         if (init("Test Window", 800, 600)) {
+            std::srand(glfwGetTime());
             m_scene.init();
             m_physics.init(m_scene.get_registry());
             reset();
@@ -40,13 +46,14 @@ public:
             return;
 
         // Simulate physics world
-        m_physics.process(delta_time);
+        m_physics.resolve_motion(delta_time);
+        m_physics.resolve_collisions();
         m_scene.update(delta_time);
 
         // Check gameover
         if (m_ball_count < 1) {
-                std::cout << "Gameover" << std::endl;
-                m_paused = true;
+            std::cout << "Gameover" << std::endl;
+            m_paused = true;
         }
 
         // Render
@@ -73,12 +80,12 @@ public:
 
     void create_ball(glm::vec2 pos = glm::vec2(0), glm::vec2 vel = glm::vec2(0.1f, 1.0f)) {
         Entity ball = m_scene.create_circle("Ball", glm::vec3(pos, 0), 0.02f);
-        ball.add<Component::Collision2D>(glm::vec2(0.0f), 1.0f, 1.0f);
-        ball.add<Component::Motion2D>(vel);
-        ball.add<Component::OnUpdate>([this](Entity& e){ 
+        ball.add<Component::Boundingbox2D>(glm::vec2(0.0f), 1.0f, Physics2D::resolve_reflection);
+        ball.add<Component::Motion>(vel);
+        ball.add<Component::OnUpdate>([this](Entity e){ 
             auto pos = e.get<Component::Transform>().position;
             if ((abs(pos.x) > 1.1) || (abs(pos.y) > 1.1)) {
-                e.add<Component::ScheduledDelete>();
+                e.schedule_delete();
                 this->m_ball_count--;
             }
         });
@@ -88,10 +95,46 @@ public:
 
     void screen_shake() { m_scene.screen_shake(); }
 
+    void maybe_spawn_powerup() {
+        const float drop_chance = 0.2;
+
+        if (randf() < drop_chance) {
+            float x = 2.0f * randf() - 1.0f;
+
+            std::cout << "Created powerup at " << x << std::endl;
+
+            Entity powerup = m_scene.create_circle("Powerup", glm::vec3(x, 0.5, 0), 0.02f, glm::vec4(0.1, 0.6, 0.2, 1.0));
+            powerup.add<Component::Boundingbox2D>(glm::vec2(0.0f), 1.0f, [this](Entity powerup, Entity other){
+                if (other.has<Component::Paddle>()) {
+                    powerup.schedule_delete();
+
+                    auto& reg = this->m_scene.get_registry();
+                    auto view = reg.view<Component::PlayBall>();
+
+                    for (entt::entity e : view) {
+                        auto motion = reg.get<Component::Motion>(e);
+                        glm::vec3 v = motion.velocity;
+                        glm::vec3 perp = glm::vec3(v.y, -v.x, v.z);
+                        motion.velocity = glm::length(v) * glm::normalize(v - 0.2f * perp);
+                        auto transform = reg.get<Component::Transform>(e);
+                        create_ball(transform.position - 0.1f * v, glm::length(v) * glm::normalize(v + 0.2f * perp));
+                    }
+                }
+            });
+
+            powerup.add<Component::Motion>(glm::vec2(0, -0.5));
+            powerup.add<Component::PowerUp>();
+            powerup.add<Component::OnUpdate>([](Entity e){ 
+                auto pos = e.get<Component::Transform>().position;
+                if ((abs(pos.x) > 1.1f) || (abs(pos.y) > 1.1f)) 
+                    e.schedule_delete();
+            });
+        }
+    }
+
     void reset() {
         m_score = 0;
         m_scene.clear();
-        m_physics.clear();
 
         // Add Ball
         create_ball();
@@ -101,9 +144,12 @@ public:
         float aspect = 600.0f / 800.0f;
         glm::vec2 brick_scale = glm::vec2(0.19, 0.04);
 
-        Callback::Function2 on_brick_collision = [this](Entity& brick, Entity& other){
-            brick.schedule_delete();
-            this->screen_shake();
+        Callback::Function2 on_brick_collision = [this](Entity brick, Entity other){
+            if (other.has<Component::PlayBall>()) {
+                brick.schedule_delete();
+                this->maybe_spawn_powerup();
+                this->screen_shake();
+            }
         };
 
         for (int i = 0; i < columns; i++) {
@@ -114,31 +160,30 @@ public:
                 char name[16];
                 sprintf_s(name, 16, "Brick[%i, %i]", i, j);
                 Entity e = m_scene.create_quad(name, glm::vec3(x, y, 0.0f), brick_scale);
-                e.add<Component::Collision2D>(Component::Collision2D::Rect2D, on_brick_collision);
+                e.add<Component::Boundingbox2D>(Component::Boundingbox2D::Rect2D, on_brick_collision);
             }
         }
 
         // Add paddle
         m_paddle = m_scene.create_quad("Paddle", glm::vec3(0.0f, -0.96f, 0.0f), brick_scale);
-        m_paddle.add<Component::Collision2D>(Component::Collision2D::Rect2D);
+        m_paddle.add<Component::Boundingbox2D>(Component::Boundingbox2D::Rect2D);
+        m_paddle.add<Component::Paddle>();
 
         // Add wall colliders
         Entity wall_l = m_scene.create_entity("Wall left");
-        wall_l.add<Component::Collision2D>(Component::Collision2D::Rect2D);
+        wall_l.add<Component::Boundingbox2D>(Component::Boundingbox2D::Rect2D);
         wall_l.add<Component::Transform>(glm::vec3(-2.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
         wall_l.add<Component::Quad>(glm::vec3(0, 0, 0));
         
         Entity wall_r = m_scene.create_entity("Wall right");
-        wall_r.add<Component::Collision2D>(Component::Collision2D::Rect2D);
+        wall_r.add<Component::Boundingbox2D>(Component::Boundingbox2D::Rect2D);
         wall_r.add<Component::Transform>(glm::vec3(1.0f, -2.0f, 0.0f), glm::vec3(1.0f, 4.0f, 1.0f));
         wall_r.add<Component::Quad>(glm::vec3(0, 0, 0));
 
         Entity wall_top = m_scene.create_entity("Wall top");
-        wall_top.add<Component::Collision2D>(Component::Collision2D::Rect2D);
+        wall_top.add<Component::Boundingbox2D>(Component::Boundingbox2D::Rect2D);
         wall_top.add<Component::Transform>(glm::vec3(-2.0f, 1.0f, 0.0f), glm::vec3(4.0f, 1.0f, 1.0f));
         wall_top.add<Component::Quad>(glm::vec3(0, 0, 0));
-
-        m_physics.construct();
     }
 
 private:
@@ -154,9 +199,6 @@ private:
 
         float cam_x = aspect * (x / w  * 2.0f - 1.0f);
         transform.position.x = glm::clamp(cam_x, sx - 1.0f, 1.0f - sx) - sx;
-
-        // Need to manually trigger updates for objects we move ourself :/
-        m_physics.update_entity(m_paddle.get_entity());
     }
 };
 

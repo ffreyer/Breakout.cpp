@@ -51,9 +51,9 @@ public:
         // m_registry->remove<Component>(m_entity);
     }
 
-    template <typename Component>
-    Component& get() const {
-        return m_registry->get<Component>(m_entity);
+    template <typename... Component>
+    decltype(auto) get() const {
+        return m_registry->get<Component...>(m_entity);
     }
 
     template <typename... Component>
@@ -70,7 +70,8 @@ public:
     }
 
     void schedule_delete() const {
-        m_registry->emplace<Component::ScheduledDelete>(m_entity);
+        if (!has<Component::ScheduledDelete>())
+            m_registry->emplace<Component::ScheduledDelete>(m_entity);
     }
 
     friend inline bool operator==(const Entity& e1, const Entity& e2) {

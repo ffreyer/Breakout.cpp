@@ -95,6 +95,8 @@ namespace Component {
         glm::mat4 projectionview;
         glm::vec2 resolution;
     };
+
+    struct ScheduledDelete {};
 }
 
 std::ostream& operator<<(std::ostream& stream, Component::Name& comp);

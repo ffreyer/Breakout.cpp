@@ -70,18 +70,18 @@ namespace Component {
 
         BoundingShape bbox;
         float mass = 1.0f;
-        Callback::Function on_collision = Callback::do_nothing;
+        Callback::Function2 on_collision = Callback::do_nothing2;
 
-        Collision2D(float l, float r, float b, float t, float m = 1.0f, Callback::Function cb = Callback::do_nothing)
+        Collision2D(float l, float r, float b, float t, float m = 1.0f, Callback::Function2 cb = Callback::do_nothing2)
             : bbox(BoundingShape(l, r, b, t)), mass(m), on_collision(cb) 
         {}
-        Collision2D(glm::vec2 p, float r, float m = 1.0f, Callback::Function cb = Callback::do_nothing)
+        Collision2D(glm::vec2 p, float r, float m = 1.0f, Callback::Function2 cb = Callback::do_nothing2)
             : bbox(BoundingShape(p, r)), mass(m), on_collision(cb)
         {}
-        Collision2D(uint8_t shape, float m = 1.0f, Callback::Function cb = Callback::do_nothing)
+        Collision2D(uint8_t shape, float m = 1.0f, Callback::Function2 cb = Callback::do_nothing2)
             : bbox(BoundingShape(shape)), mass(m), on_collision(cb)
         {}
-        Collision2D(uint8_t shape, Callback::Function cb)
+        Collision2D(uint8_t shape, Callback::Function2 cb)
             : bbox(BoundingShape(shape)), on_collision(cb)
         {}
     };
@@ -173,9 +173,17 @@ public:
     PhysicsEngine2D(entt::registry& registry) : m_registry(&registry) {};
     PhysicsEngine2D() : m_registry(nullptr) {};
 
-    void init(entt::registry& registry) { m_registry = &registry; }
+    void init(entt::registry& registry) {
+        m_registry = &registry;
+        m_registry->on_destroy<Component::Collision2D>().connect<&PhysicsEngine2D::delete_entity_cb>(this);
+    }
 
-    void add_entity(entt::entity e) { update_entity(e); }
+    void delete_entity_cb(entt::registry& r, entt::entity e) { return delete_entity(e); };
+    void add_entity_cb(entt::registry& r, entt::entity e) { return add_entity(e); }
+
+    void add_entity(entt::entity e) {
+        update_entity(e);
+    }
 
     // TODO: should this delete from m_earliest too?
     void delete_entity(entt::entity entity);
@@ -195,48 +203,6 @@ public:
 
     // run simulation for delta_time
     void process(float delta_time);
-    // template <typename F>
-    // void process(float delta_time, F collision_callback) {
-
-    //     float local_delta_time = delta_time;
-    //     while (!m_hitlist.empty()) {
-    //         // move newest to back
-    //         std::pop_heap(m_hitlist.begin(), m_hitlist.end(), std::greater<HitData>{});
-
-    //         // if newest is past delta time revert and exit
-    //         HitData& hit = m_hitlist.back();
-    //         if (hit.time > local_delta_time) {
-    //             std::push_heap(m_hitlist.begin(), m_hitlist.end(), std::greater<HitData>{});
-    //             break;
-    //         }
-    //         // otherwise remove the hit from hitlist
-    //         m_hitlist.pop_back();
-    //         local_delta_time = local_delta_time - hit.time;
-
-    //         // and process it
-    //         resolve_hit(hit);
-
-    //         // Resolve callbacks
-    //         collision_callback(*m_registry, hit.entity1);
-    //         collision_callback(*m_registry, hit.entity2);
-
-    //         // Calculate next hit for the entites of the resolved hit
-    //         calculate_collision(hit.entity1);
-    //         if (hit.dynamic)
-    //             calculate_collision(hit.entity2);
-    //     }
-
-    //     // Advance all particles to pos(delta_time)
-    //     auto movables = m_registry->view<Component::Transform, Component::Motion2D>();
-    //     for (entt::entity e : movables) {
-    //         auto [transform, movement] = movables.get(e);
-    //         transform.translate_by(local_delta_time * movement.velocity);
-    //     }
-
-    //     // Advance time
-    //     for (HitData& hit : m_hitlist)
-    //         hit.time -= local_delta_time; 
-    // }
 
     void resolve_hit(HitData& hit);
 

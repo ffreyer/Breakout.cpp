@@ -9,6 +9,11 @@
 #include "core/print.hpp"
 #include "core/logging.hpp"
 
+namespace Component {
+    struct PlayBall {};
+}
+
+
 class MyApp : public Application {
 private:
     Scene2D m_scene;
@@ -16,9 +21,12 @@ private:
     Entity m_paddle;
     uint16_t m_score = 0;
     bool m_paused = false;
-    PhysicsEngine2D m_physics;
 
 public:
+    Entity m_paddle;
+    PhysicsEngine2D m_physics;
+    int m_ball_count = 0;
+
     MyApp() {
         if (init("Test Window", 800, 600)) {
             m_scene.init();
@@ -36,22 +44,9 @@ public:
         m_scene.update(delta_time);
 
         // Check gameover
-        {
-            // Delete out of bounds balls
-            for (auto it = this->m_balls.begin(); it != this->m_balls.end(); it++) {
-                auto ball = *it;
-                auto transform = ball.get<Component::Transform>();
-                if (transform.position.y < -1.0f) {
-                    m_balls.erase(it);
-                    break;
-                }
-            }
-
-            // If no balls exist we dead
-            if (m_balls.empty()) {
+        if (m_ball_count < 1) {
                 std::cout << "Gameover" << std::endl;
                 m_paused = true;
-            }
         }
 
         // Render
@@ -69,6 +64,9 @@ public:
                 reset();
             m_paused = false;
 
+            if (ke.button == Key::Escape)
+                m_running = false;
+
             return;
         }
     }
@@ -77,7 +75,15 @@ public:
         Entity ball = m_scene.create_circle("Ball", glm::vec3(pos, 0), 0.02f);
         ball.add<Component::Collision2D>(glm::vec2(0.0f), 1.0f, 1.0f);
         ball.add<Component::Motion2D>(vel);
-        m_balls.push_back(ball);
+        ball.add<Component::OnUpdate>([this](Entity& e){ 
+            auto pos = e.get<Component::Transform>().position;
+            if ((abs(pos.x) > 1.1) || (abs(pos.y) > 1.1)) {
+                e.add<Component::ScheduledDelete>();
+                this->m_ball_count--;
+            }
+        });
+        m_ball_count++;
+        ball.add<Component::PlayBall>();
     }
 
     void screen_shake() { m_scene.screen_shake(); }
@@ -95,8 +101,8 @@ public:
         float aspect = 600.0f / 800.0f;
         glm::vec2 brick_scale = glm::vec2(0.19, 0.04);
 
-        Callback::Function on_brick_collision = [this](Entity& e, Entity& other){
-            Callback::destroy(e, other);
+        Callback::Function2 on_brick_collision = [this](Entity& brick, Entity& other){
+            brick.schedule_delete();
             this->screen_shake();
         };
 

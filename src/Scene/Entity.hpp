@@ -69,10 +69,15 @@ public:
         m_registry->destroy(m_entity);
     }
 
+    void schedule_delete() const {
+        m_registry->emplace<Component::ScheduledDelete>(m_entity);
+    }
+
     friend inline bool operator==(const Entity& e1, const Entity& e2) {
         return (e1.m_registry == e2.m_registry) && (e1.m_entity == e2.m_entity);
     }
     friend inline bool operator!=(const Entity& e1, const Entity& e2) {
         return !(e1 == e2);
     }
+    operator const entt::entity() { return m_entity; }
 };

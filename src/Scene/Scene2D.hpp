@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.hpp"
+#include "callbacks.hpp"
 #include "renderer/Renderer2D.hpp"
 #include "camera/OrthographicCamera.hpp"
 
@@ -120,8 +121,27 @@ public:
         return entity;
     }
 
+    void screen_shake() { m_shake.reset(); }
+
+    // Systems
+
+    void resolve_on_update() {
+        auto view = m_registry.view<Component::OnUpdate>();
+        for (entt::entity e : view) {
+            Entity ent = Entity(m_registry, e);
+            m_registry.get<Component::OnUpdate>(e).callback(ent);
+        }
+    }
+
+    void resolve_scheduled_deletes() {
+        auto view = m_registry.view<Component::ScheduledDelete>();
+        m_registry.destroy(view.begin(), view.end());
+    }
+
     void update(float delta_time) {
         m_shake.update(delta_time);
+        resolve_on_update();
+        resolve_scheduled_deletes();
     }
 
     void render(glm::vec2 resolution) {
@@ -154,7 +174,6 @@ public:
         m_renderer.end();
     }
 
-    void screen_shake() { m_shake.reset(); }
 };
 
 

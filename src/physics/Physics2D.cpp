@@ -1,13 +1,15 @@
 #include "Physics2D.hpp"
 
 void PhysicsEngine2D::delete_entity(entt::entity entity) {
-    for (std::vector<HitData>::iterator it = m_hitlist.begin(); it != m_hitlist.end(); it++) {
-        HitData& hit = *it;
-        if (hit.entity1 == entity || hit.entity2 == entity) {
-            m_hitlist.erase(it);
-            it--;
-        }
-    }
+    m_hitlist.erase(
+        std::remove_if(
+            m_hitlist.begin(), m_hitlist.end(),
+            [entity](HitData& hit){
+                return (hit.entity1 == entity) || (hit.entity2 == entity);
+            }
+        ),
+        m_hitlist.end()
+    );
 }
 
 

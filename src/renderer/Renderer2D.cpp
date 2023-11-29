@@ -60,8 +60,9 @@ Renderer2D::~Renderer2D() {
 // TODO: refactor this to work without glad
 #include <glad/gl.h>
 
-void Renderer2D::begin(glm::mat4& projectionview) {
+void Renderer2D::begin(glm::mat4& projectionview, glm::vec2 resolution) {
     m_projectionview = projectionview;
+    m_resolution = resolution;
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -105,7 +106,7 @@ void Renderer2D::render_circles() {
     m_data.circle_shader->set_uniform("projectionview", m_projectionview);
     // m_data.circle_shader->set_uniform("projection", m_camera.m_projection);
     // m_data.circle_shader->set_uniform("view", m_camera.m_view);
-    m_data.circle_shader->set_uniform("resolution", glm::vec2(800, 600)); // TODO:
+    m_data.circle_shader->set_uniform("resolution", m_resolution);
 
     glDrawArrays(GL_POINTS, 0, m_data.circle_index);
 

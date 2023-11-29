@@ -22,7 +22,7 @@ void generate_vertex(vec4 origin, vec2 dir) {
     gl_Position = clip_pos;
 
     f_sdf = resolution * (clip_pos.xy - origin.xy);
-    f_radius = resolution.y * g_radius[0];
+    f_radius = min(resolution.x, resolution.y) * g_radius[0];
     f_color = g_color[0];
     EmitVertex();
 }

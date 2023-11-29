@@ -196,8 +196,10 @@ private:
         float w = (float) get_window_size().x;
         float aspect = (float) w / get_window_size().y;
         float sx = 0.5f * transform.scale.x;
+        float cam_x = (x / w  * 2.0f - 1.0f);
+        if (aspect > 1)
+            cam_x = aspect * cam_x;
 
-        float cam_x = aspect * (x / w  * 2.0f - 1.0f);
         transform.position.x = glm::clamp(cam_x, sx - 1.0f, 1.0f - sx) - sx;
     }
 };

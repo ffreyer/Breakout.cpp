@@ -147,11 +147,15 @@ public:
     void render(glm::vec2 resolution) {
         // Fixing shorter dimension here to avoid edges +-1 being outside a standard window
         float aspect = resolution.x / resolution.y;
-        m_camera.set_bounds(-aspect, aspect, -1.0f, 1.0f);
+        if (aspect > 1)
+            m_camera.set_bounds(-aspect, aspect, -1.0f, 1.0f);
+        else
+            m_camera.set_bounds(-1.0f, 1.0f, -1.0f / aspect, 1.0f / aspect);
+
         float shake_delta = m_shake.get_delta();
         m_camera.translate_by(glm::vec3(0.0f, shake_delta, 0.0f));
 
-        m_renderer.begin(m_camera.m_projectionview);
+        m_renderer.begin(m_camera.m_projectionview, resolution);
 
         {
             auto view = m_registry.view<Component::Transform, Component::Quad>();

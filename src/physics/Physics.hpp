@@ -26,6 +26,9 @@ public:
         }
     }
 
+    // TODO: Optimize:
+    // - double work from not advancing inner loop
+    // - better filtering options? e.g. fast skip?
     void resolve_collisions() const {
         auto view = m_registry->view<Component::Motion, Component::Transform, Component::Boundingbox2D>();
         for (entt::entity main : view)

@@ -181,9 +181,9 @@ public:
 };
 
 
-void debug_log(entt::registry& reg, entt::entity entity) {
-    std::cout << "Deleting entity";
-    std::string name = reg.get<Component::Name>(entity).name;
-    // uint64_t id = reg.get<Component::ID>(entity).id;
-    std::cout << " " << name << " " << (uint32_t) entity << std::endl;
-}
+// void debug_log(entt::registry& reg, entt::entity entity) {
+//     std::cout << "Deleting entity";
+//     std::string name = reg.get<Component::Name>(entity).name;
+//     // uint64_t id = reg.get<Component::ID>(entity).id;
+//     std::cout << " " << name << " " << (uint32_t) entity << std::endl;
+// }

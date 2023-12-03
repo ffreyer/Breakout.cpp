@@ -50,29 +50,56 @@ public:
     void init() {
         // Example Cube
         std::vector<float> vertices = {
-            -0.5f, -0.5f, -0.5f,
-            -0.5f,  0.5f, -0.5f,
-             0.5f, -0.5f, -0.5f,
-             0.5f,  0.5f, -0.5f, 
+            // back
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+             0.5f,  0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 
 
-            -0.5f, -0.5f,  0.5f,
-            -0.5f,  0.5f,  0.5f,
-             0.5f, -0.5f,  0.5f,
-             0.5f,  0.5f,  0.5f,
+            // front
+            -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+             0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+
+            // left
+            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f, -1.0f, 0.0f, 0.0f,
+
+            // right
+             0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+             0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+             0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+
+            // bottom
+            -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f, 0.0f, -1.0f, 0.0f,
+             0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f, 0.0f, -1.0f, 0.0f,
+
+            // top
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+             0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+             0.5f, 0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
         };
 
         std::vector<uint32_t> indices = {
             0, 1, 2, 1, 2, 3, // back
             4, 5, 6, 5, 6, 7, // front
-            0, 1, 4, 1, 4, 5, // left
-            2, 3, 6, 3, 6, 7, // right
-            0, 2, 6, 0, 6, 4, // bottom
-            1, 3, 7, 1, 7, 5  // top
+            8, 9, 10, 9, 10, 11, // left
+            12, 13, 14, 13, 14, 15, // right
+            16, 17, 18, 17, 18, 19, // bottom
+            20, 21, 22, 21, 22, 23  // top
         };
 
         Entity plane = create_entity("Simple Plane");
         auto layout = GLBufferLayout({
-            GLBufferElement("Position", GLType::Float3)
+            GLBufferElement("Position", GLType::Float3),
+            GLBufferElement("Normal", GLType::Float3),
         });
         plane.add<Component::SimpleMesh>(indices, vertices, layout);
         plane.add<Component::Transform>();

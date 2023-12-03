@@ -6,6 +6,7 @@
 #include "camera/FirstPersonCamera.hpp"
 #include "../core/print.hpp"
 #include "../core/Events.hpp"
+#include "../opengl/GLTexture.hpp"
 
 #include <vector>
 #include <array>
@@ -34,6 +35,41 @@ namespace Component {
         void unbind() const { va.unbind(); }
         uint32_t size() const { return va.index_count(); }
     };
+
+    struct SimpleTexture2D {
+        int width = 0, height = 0;
+        GLTexture<2> texture;
+
+        SimpleTexture2D(const char* filepath) {
+            int channels;
+            stbi_set_flip_vertically_on_load(true);
+            unsigned char* image = stbi_load(filepath, &width, &height, &channels, 0);
+            unsigned int format;
+            switch (channels) {
+            case 1: format = GLTexture<2>::RED;  break;
+            case 2: format = GLTexture<2>::RG;   break;
+            case 3: format = GLTexture<2>::RGB;  break;
+            case 4: format = GLTexture<2>::RGBA; break;
+            }
+            texture.set_internal_format(format);
+            texture.set_data(image, format, width, height);
+            stbi_image_free(image);
+        };
+
+        void bind(GLShader& shader, unsigned int slot) {
+            char name[10];
+            sprintf_s(name, 10, "texture%u", slot);
+            shader.set_uniform(name, 0);
+            glActiveTexture(GL_TEXTURE0 + slot);
+            texture.bind();
+        }
+        void bind() {
+            texture.bind();
+        };
+        void unbind() {
+            texture.unbind();
+        };
+    };
 }
 
 class Scene3D : public AbstractScene {
@@ -51,40 +87,40 @@ public:
         // Example Cube
         std::vector<float> vertices = {
             // back
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-            -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-             0.5f,  0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f,
 
             // front
-            -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-             0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-             0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
 
             // left
-            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f, -1.0f, 0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
 
             // right
-             0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-             0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
-             0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-             0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+             0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
 
             // bottom
-            -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f, 0.0f, -1.0f, 0.0f,
-             0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-             0.5f, -0.5f,  0.5f, 0.0f, -1.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 1.0f,
 
             // top
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-            -0.5f, 0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
-             0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-             0.5f, 0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f,
         };
 
         std::vector<uint32_t> indices = {
@@ -96,13 +132,15 @@ public:
             20, 21, 22, 21, 22, 23  // top
         };
 
-        Entity plane = create_entity("Simple Plane");
+        Entity cube = create_entity("Simple Cube");
         auto layout = GLBufferLayout({
             GLBufferElement("Position", GLType::Float3),
             GLBufferElement("Normal", GLType::Float3),
+            GLBufferElement("Texture Coordinates", GLType::Float2),
         });
-        plane.add<Component::SimpleMesh>(indices, vertices, layout);
-        plane.add<Component::Transform>();
+        cube.add<Component::SimpleMesh>(indices, vertices, layout);
+        cube.add<Component::Transform>();
+        cube.add<Component::SimpleTexture2D>("../assets/wood_container.jpg");
 
         // shader
         m_mesh_shader = std::make_shared<GLShader>();
@@ -139,7 +177,8 @@ public:
 
         m_camera.recalculate_view();
 
-        auto view = m_registry.view<Component::SimpleMesh, Component::Transform>();
+        auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
+        // auto view = m_registry.view<Component::SimpleMesh, Component::Transform>();
 
         m_mesh_shader->bind();
 
@@ -155,9 +194,11 @@ public:
 
         for (entt::entity e : view) {
             auto& mesh = m_registry.get<Component::SimpleMesh>(e);
+            auto& texture = m_registry.get<Component::SimpleTexture2D>(e);
             auto& transform = m_registry.get<Component::Transform>(e);
             m_mesh_shader->set_uniform("model", transform.get_matrix());
             m_mesh_shader->set_uniform("normalmatrix", transform.get_normalmatrix());
+            texture.bind(*m_mesh_shader, 0);
             mesh.bind();
             glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
         }

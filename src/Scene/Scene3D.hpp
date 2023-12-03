@@ -86,11 +86,18 @@ public:
     void update(float delta_time) {
         resolve_on_update();
         resolve_scheduled_deletes();
+
+        auto view = m_registry.view<Component::Transform>();
+        for(entt::entity e : view) {
+            auto& transform = m_registry.get<Component::Transform>(e);
+            transform.rotate_by(glm::normalize(glm::vec3(-1.0f, 1.0f, -0.5f)), delta_time);
+        }
     }
 
     void render() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
         m_camera.recalculate_view();
 

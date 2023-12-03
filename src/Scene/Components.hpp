@@ -35,7 +35,7 @@ namespace Component {
 
     struct Transform {
         glm::vec3 position = glm::vec3(0.0f);
-        glm::vec3 rotation = glm::vec3(0.0f);
+        glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
         glm::vec3 scale = glm::vec3(1.0f);
 
         Transform() = default;
@@ -46,20 +46,26 @@ namespace Component {
         glm::mat4 get_matrix() {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::scale(model, scale);
-            model = glm::toMat4(glm::quat(rotation)) * model;
+            model = glm::toMat4(rotation) * model;
             model = glm::translate(model, position);
             return model;
         }
 
-        // TODO: Should this be included?
-        void translate_by(glm::vec3 v) {
+        void translate_by(const glm::vec3& v) {
             position = position + v;
         }
-        void translate_by(glm::vec2 v) {
+        void translate_by(const glm::vec2& v) {
             position = position + glm::vec3(v, 0);
         }
-        void scale_by(glm::vec3 v) {
+        void scale_by(const glm::vec3& v) {
             scale = scale * v;
+        }
+        void rotate_by(const glm::quat& q) {
+            rotation = rotation * q;
+        }
+        void rotate_by(const glm::vec3& axis, float angle) {
+            glm::quat q = glm::angleAxis(angle, axis);
+            rotation = rotation * q;
         }
 
         operator const glm::mat4() { return get_matrix(); }

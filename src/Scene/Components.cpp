@@ -8,7 +8,9 @@ std::ostream& operator<<(std::ostream& stream, Component::Name& comp) {
 
 std::ostream& operator<<(std::ostream& stream, Component::Transform& comp) {
     stream << "Transform(position = " << comp.position << ", rotation = " << 
-        comp.rotation << ", scale = " << comp.scale << ")";
+        "(" << comp.rotation[0] << ", " << comp.rotation[1] <<
+        ", " << comp.rotation[2] << ", " << comp.rotation[3] <<
+        "), scale = " << comp.scale << ")";
     return stream;
 }
 

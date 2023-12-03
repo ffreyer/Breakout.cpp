@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Entity.hpp"
+#include <cmath>
+
+#include "AbstractScene.hpp"
 #include "callbacks.hpp"
 #include "renderer/Renderer2D.hpp"
 #include "camera/OrthographicCamera.hpp"
@@ -8,68 +10,36 @@
 // TODO: 
 // Move definitions to cpp file
 
-class AbstractScene {
-protected:
-    entt::registry m_registry;
-
-public:
-    // registry has a default constructor so this should be fine
-    AbstractScene() = default;
-    // registry is stack allocated so this should be fine
-    ~AbstractScene() = default;
-
-    Entity create_entity() {
-        return create_entity("N/A");
-    }
-
-    Entity create_entity(std::string name) {
-        // Entity entity = { m_registry, m_registry.create() };
-        Entity e = Entity(m_registry, m_registry.create());
-        e.add<Component::Name>(name);
-        return e;
-    }
-
-    entt::registry& get_registry() {
-        return m_registry;
-    }
-
-    virtual void clear() {
-        m_registry.clear();
-    }
-};
-
-#include <cmath>
-    
-struct ScreenShake {
-    float intensity = 0.03f;
-    float damping = 5.0f;
-    float frequency = 50.0f;
-
-    void reset() {
-        m_time = -0.05f;
-    }
-
-    void update(float delta_time) {
-        m_time += delta_time;
-    }
-
-    float get_offset() {
-        m_last_offset = m_time > 10 * damping ? 0.0f : intensity * sin(frequency * m_time) * std::min(1.0f, exp(-m_time * damping));
-        return m_last_offset;
-    }
-
-    float get_delta() {
-        float last = m_last_offset;
-        return get_offset() - last;
-    }
-
-private:
-    float m_time = 10000000.0f;
-    float m_last_offset = 0.0f;
-};
-
 class Scene2D : public AbstractScene {
 private:
+    struct ScreenShake {
+        float intensity = 0.03f;
+        float damping = 5.0f;
+        float frequency = 50.0f;
+
+        void reset() {
+            m_time = -0.05f;
+        }
+
+        void update(float delta_time) {
+            m_time += delta_time;
+        }
+
+        float get_offset() {
+            m_last_offset = m_time > 10 * damping ? 0.0f : intensity * sin(frequency * m_time) * std::min(1.0f, exp(-m_time * damping));
+            return m_last_offset;
+        }
+
+        float get_delta() {
+            float last = m_last_offset;
+            return get_offset() - last;
+        }
+
+    private:
+        float m_time = 10000000.0f;
+        float m_last_offset = 0.0f;
+    };
+
     Renderer2D m_renderer;
     OrthographicCamera m_camera;
     ScreenShake m_shake;

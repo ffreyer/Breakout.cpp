@@ -102,6 +102,13 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "bitset": "cpp",
+        "stack": "cpp",
+        "any": "cpp",
+        "cinttypes": "cpp",
+        "condition_variable": "cpp",
+        "numeric": "cpp",
+        "variant": "cpp"
     }
 }

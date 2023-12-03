@@ -1,12 +1,5 @@
 #include "FirstPersonCamera.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-
-void FirstPersonCamera::recalculate_projection() {
-    m_projection = glm::perspective(glm::radians(m_fov), m_aspect, m_near, m_far);
-    m_projectionview = m_projection * m_view;
-}
-
 void FirstPersonCamera::recalculate_view() {
     // glm::vec3 ux, uy, uz;
 
@@ -34,7 +27,18 @@ void FirstPersonCamera::rotate(float angle, glm::vec3 axis) {
     rot = glm::rotate(rot, angle, axis);
     m_viewdirection = glm::mat3(rot) * m_viewdirection;
 }
+
+void FirstPersonCamera::lookat(glm::vec3 v) {
+    m_viewdirection = v - m_eyeposition;
+}
     
+void FirstPersonCamera::eyeposition(glm::vec3 v) {
+    m_eyeposition = v;
+}
+void FirstPersonCamera::up(glm::vec3 v) {
+    m_up = v;
+}
+
 // camera motion names
 void FirstPersonCamera::pan(float angle) {
     float c = cos(angle);

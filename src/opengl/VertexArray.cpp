@@ -3,7 +3,7 @@
 
 // GLVertexBuffer
 
-GLVertexBuffer::GLVertexBuffer(size_t size, unsigned int mode = GL_STREAM_DRAW)
+GLVertexBuffer::GLVertexBuffer(size_t size, unsigned int mode)
     : m_size(size), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
@@ -11,7 +11,7 @@ GLVertexBuffer::GLVertexBuffer(size_t size, unsigned int mode = GL_STREAM_DRAW)
     glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_mode);
 }
 
-GLVertexBuffer::GLVertexBuffer(void* vertices, size_t size, unsigned int mode = GL_STREAM_DRAW)
+GLVertexBuffer::GLVertexBuffer(void* vertices, size_t size, unsigned int mode)
     : m_size(size), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
@@ -48,7 +48,7 @@ GLBufferLayout GLVertexBuffer::get_layout() const {
 
 // GLIndexBuffer
 
-GLIndexBuffer::GLIndexBuffer(size_t size, unsigned int mode = GL_STATIC_DRAW)
+GLIndexBuffer::GLIndexBuffer(size_t size, unsigned int mode)
     : m_size(size), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
@@ -56,7 +56,7 @@ GLIndexBuffer::GLIndexBuffer(size_t size, unsigned int mode = GL_STATIC_DRAW)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, m_mode);
 }
 
-GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode = GL_STATIC_DRAW)
+GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode)
     : m_size(size), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
@@ -169,12 +169,14 @@ void GLVertexArray::push(std::shared_ptr<GLVertexBuffer> buffer) {
 
 void GLVertexArray::bind() const {
     glBindVertexArray(m_id);
-}
-
-void GLVertexArray::unbind() const {
-    glBindVertexArray(0);
+	if (m_indices)
+		m_indices->bind();
 }
 
 void GLVertexArray::update(size_t idx, void* data, size_t size) const {
     m_buffers[idx]->set_data(data, size);
+}
+
+void GLVertexArray::set_layout(size_t idx, const GLBufferLayout& layout) const {
+	m_buffers[idx]->set_layout(layout);
 }

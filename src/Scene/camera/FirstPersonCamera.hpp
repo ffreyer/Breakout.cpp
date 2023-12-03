@@ -10,15 +10,21 @@ public:
     glm::vec3 m_up;
 
     FirstPersonCamera() :
-        m_eyeposition(glm::vec3(0.0f, 1.7f, 0.0f)),
-        m_viewdirection(glm::vec3(0.0f, 0.0f, -1.0f)),
+        m_eyeposition(glm::vec3(1.0f, 1.0f, 1.0f)),
+        m_viewdirection(glm::vec3(-1.0f, -1.0f, -1.0f)),
         m_up(glm::vec3(0.0f, 1.0f, 0.0))
     {
+        recalculate_view();
     }
 
     // generic transformations
     void translate(glm::vec3 v);
     void rotate(float angle, glm::vec3 axis);
+
+    // direct setters
+    void eyeposition(glm::vec3 v);
+    void lookat(glm::vec3 v);
+    void up(glm::vec3 v);
     
     // camera motion names
     void pan(float angle); // left - right rotation (shake head)
@@ -29,6 +35,5 @@ public:
     void pedestal(float distance); // up - down translation
     void truck(float distance); // left - right translation
 
-    void recalculate_view();
-    void recalculate_projection();
+    void recalculate_view() override;
 };

@@ -3,16 +3,16 @@
 
 // GLVertexBuffer
 
-GLVertexBuffer::GLVertexBuffer(size_t size, unsigned int mode)
-    : m_size(size), m_mode(mode)
+GLVertexBuffer::GLVertexBuffer(size_t bytesize, unsigned int mode)
+    : m_size(bytesize), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_mode);
 }
 
-GLVertexBuffer::GLVertexBuffer(void* vertices, size_t size, unsigned int mode)
-    : m_size(size), m_mode(mode)
+GLVertexBuffer::GLVertexBuffer(void* vertices, size_t bytesize, unsigned int mode)
+    : m_size(bytesize), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
@@ -23,9 +23,9 @@ GLVertexBuffer::~GLVertexBuffer() {
     glDeleteBuffers(1, &m_id);
 }
 
-void GLVertexBuffer::set_data(const void* vertices, unsigned int size) {
+void GLVertexBuffer::set_data(const void* vertices, unsigned int bytesize) {
     bind();
-    m_size = size;
+    m_size = bytesize;
     glBufferSubData(GL_ARRAY_BUFFER, 0, m_size, vertices);
 }
 
@@ -48,16 +48,16 @@ GLBufferLayout GLVertexBuffer::get_layout() const {
 
 // GLIndexBuffer
 
-GLIndexBuffer::GLIndexBuffer(size_t size, unsigned int mode)
-    : m_size(size), m_mode(mode)
+GLIndexBuffer::GLIndexBuffer(size_t bytesize, unsigned int mode)
+    : m_size(bytesize), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, m_mode);
 }
 
-GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode)
-    : m_size(size), m_mode(mode)
+GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t bytesize, unsigned int mode)
+    : m_size(bytesize), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
@@ -68,9 +68,9 @@ GLIndexBuffer::~GLIndexBuffer() {
     glDeleteBuffers(1, &m_id);
 }
 
-void GLIndexBuffer::set(const uint32_t * indices, size_t size) {
+void GLIndexBuffer::set(const uint32_t * indices, size_t bytesize) {
     bind();
-    m_size = size;
+    m_size = bytesize;
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_size, indices);
 }
 

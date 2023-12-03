@@ -14,8 +14,8 @@ private:
 
 public:
 	
-	GLVertexBuffer(size_t size, unsigned int mode = GL_STREAM_DRAW);
-	GLVertexBuffer(void* vertices, size_t size, unsigned int mode = GL_STREAM_DRAW);
+	GLVertexBuffer(size_t bytesize, unsigned int mode = GL_STREAM_DRAW);
+	GLVertexBuffer(void* vertices, size_t bytesize, unsigned int mode = GL_STREAM_DRAW);
 
 	~GLVertexBuffer();
 
@@ -38,8 +38,8 @@ private:
 
 public:
 	
-	GLIndexBuffer(size_t size, unsigned int mode = GL_STATIC_DRAW);
-	GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode = GL_STATIC_DRAW);
+	GLIndexBuffer(size_t bytesize, unsigned int mode = GL_STATIC_DRAW);
+	GLIndexBuffer(uint32_t* indices, size_t bytesize, unsigned int mode = GL_STATIC_DRAW);
 
 	~GLIndexBuffer();
 

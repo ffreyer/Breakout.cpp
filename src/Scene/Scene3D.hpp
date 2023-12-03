@@ -107,8 +107,13 @@ public:
         // shader
         m_mesh_shader = std::make_shared<GLShader>();
         m_mesh_shader->add_source("../assets/shaders/triangle.vert");
+        m_mesh_shader->add_source("../assets/shaders/lighting.frag");
         m_mesh_shader->add_source("../assets/shaders/triangle.frag");
         m_mesh_shader->compile();
+
+        // cam
+        m_camera.eyeposition(glm::vec3(3.0f, 0.0, 0.0f));
+        m_camera.lookat(glm::vec3(0.0f));
     }
 
     void on_resize(WindowResizeEvent& e) {
@@ -137,14 +142,22 @@ public:
         auto view = m_registry.view<Component::SimpleMesh, Component::Transform>();
 
         m_mesh_shader->bind();
+
+        // camera
         m_mesh_shader->set_uniform("projectionview", m_camera.m_projectionview);
         // m_mesh_shader->set_uniform("projection", m_camera.m_projection);
         // m_mesh_shader->set_uniform("view", m_camera.m_view);
+
+        // Basic directional light
+        m_mesh_shader->set_uniform("light_direction", glm::normalize(glm::vec3(0.0f, -1.0f, 0.0)));
+        m_mesh_shader->set_uniform("light_color", glm::vec3(0.8f, 0.95f, 1.0f));
+        m_mesh_shader->set_uniform("ambient_color", glm::vec3(0.2f));
 
         for (entt::entity e : view) {
             auto& mesh = m_registry.get<Component::SimpleMesh>(e);
             auto& transform = m_registry.get<Component::Transform>(e);
             m_mesh_shader->set_uniform("model", transform.get_matrix());
+            m_mesh_shader->set_uniform("normalmatrix", transform.get_normalmatrix());
             mesh.bind();
             glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
         }

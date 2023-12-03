@@ -51,6 +51,13 @@ namespace Component {
             return model;
         }
 
+        glm::mat3 get_normalmatrix() {
+            // TODO: can we skip the mat4?
+            glm::mat3 model = glm::mat3(glm::scale(glm::mat4(1.0f), 1.0f / scale));
+            model = glm::toMat3(rotation) * model;
+            return model;
+        }
+
         void translate_by(const glm::vec3& v) {
             position = position + v;
         }

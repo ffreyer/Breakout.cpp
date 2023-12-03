@@ -10,8 +10,8 @@ public:
     glm::vec3 m_up;
 
     FirstPersonCamera() :
-        m_eyeposition(glm::vec3(1.0f, 1.0f, 1.0f)),
-        m_viewdirection(glm::vec3(-1.0f, -1.0f, -1.0f)),
+        m_eyeposition(glm::vec3(3.0f)),
+        m_viewdirection(glm::vec3(-3.0f)),
         m_up(glm::vec3(0.0f, 1.0f, 0.0))
     {
         recalculate_view();

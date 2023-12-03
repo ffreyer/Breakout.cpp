@@ -27,7 +27,7 @@ public:
     };
 
     void on_event(AbstractEvent& event) override {
-
+        dispatch<WindowResizeEvent>(BIND_EVENT_FN(m_scene.on_resize), event);
     };
 
 };

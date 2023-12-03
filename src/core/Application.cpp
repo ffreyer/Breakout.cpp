@@ -128,11 +128,11 @@ bool Window::connect_events(Application* app) {
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int x, int y){
             Window* win = (Window*) glfwGetWindowUserPointer(window);
 
-            WindowMoveEvent event;
-            event.type = EventType::WindowMoved;
-            event.last_position = win->m_window_size;
+            WindowResizeEvent event;
+            event.type = EventType::WindowResize;
+            event.last_size = win->m_window_size;
             win->m_window_size = glm::ivec2(x, y);
-            event.position = win->m_window_size;
+            event.size = win->m_window_size;
 
             win->m_app->on_event(event);
         });

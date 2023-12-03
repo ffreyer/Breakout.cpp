@@ -5,6 +5,7 @@
 #include "renderer/Renderer2D.hpp"
 #include "camera/FirstPersonCamera.hpp"
 #include "../core/print.hpp"
+#include "../core/Events.hpp"
 
 #include <vector>
 #include <array>
@@ -81,6 +82,11 @@ public:
         m_mesh_shader->add_source("../assets/shaders/triangle.vert");
         m_mesh_shader->add_source("../assets/shaders/triangle.frag");
         m_mesh_shader->compile();
+    }
+
+    void on_resize(WindowResizeEvent& e) {
+        m_camera.m_aspect = (float) e.size.x / (float) e.size.y;
+        m_camera.recalculate_projection();
     }
 
     void update(float delta_time) {

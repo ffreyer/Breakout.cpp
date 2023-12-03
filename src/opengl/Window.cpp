@@ -75,6 +75,13 @@ glm::ivec2 Window::get_window_size() const {
     return m_window_size;
 }
 
+bool Window::is_key_pressed(KeyCode key) const {
+    return glfwGetKey(m_window, key) == GLFW_PRESS;
+}
+bool Window::is_mouse_button_pressed(MouseCode button) const {
+    return glfwGetMouseButton(m_window, button) == GLFW_PRESS;
+}
+
 void Window::set_vsync(bool active) const {
     activate(); // for savety
     glfwSwapInterval(active ? 1 : 0);

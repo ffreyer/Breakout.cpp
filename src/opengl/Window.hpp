@@ -6,6 +6,8 @@
 #include <string>
 #include <glm/glm.hpp>
 
+#include "../core/EventEnums.hpp"
+
 class Application;
 
 class Window {
@@ -42,6 +44,8 @@ public:
     glm::vec2 get_mouse_position() const;
     glm::ivec2 get_window_position() const;
     glm::ivec2 get_window_size() const;
+    bool is_key_pressed(KeyCode key) const;
+    bool is_mouse_button_pressed(MouseCode button) const;
 
     // setters
     void set_vsync(bool active) const;

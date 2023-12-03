@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <array>
+
 #include "AbstractScene.hpp"
 #include "callbacks.hpp"
 #include "renderer/Renderer2D.hpp"
@@ -7,9 +10,8 @@
 #include "../core/print.hpp"
 #include "../core/Events.hpp"
 #include "../opengl/GLTexture.hpp"
+#include "../opengl/Window.hpp"
 
-#include <vector>
-#include <array>
 
 // TODO: 
 // Move definitions to cpp file
@@ -76,6 +78,7 @@ class Scene3D : public AbstractScene {
 private:
     FirstPersonCamera m_camera;
     std::shared_ptr<GLShader> m_mesh_shader;
+    Window* m_window = nullptr;
 
 public:
 
@@ -83,7 +86,9 @@ public:
         m_camera(FirstPersonCamera())
     {}
 
-    void init() {
+    void init(Window* window) {
+        m_window = window;
+
         // Example Cube
         std::vector<float> vertices = {
             // back
@@ -154,9 +159,9 @@ public:
         m_camera.lookat(glm::vec3(0.0f));
     }
 
-    void on_resize(WindowResizeEvent& e) {
-        m_camera.m_aspect = (float) e.size.x / (float) e.size.y;
-        m_camera.recalculate_projection();
+    void on_event(AbstractEvent& event) {
+        dispatch<WindowResizeEvent>(BIND_EVENT_FN(on_resize), event);
+        dispatch<MouseMoveEvent>(BIND_EVENT_FN(on_mouse_move), event);
     }
 
     void update(float delta_time) {
@@ -168,6 +173,17 @@ public:
             auto& transform = m_registry.get<Component::Transform>(e);
             transform.rotate_by(glm::normalize(glm::vec3(-1.0f, 1.0f, -0.5f)), delta_time);
         }
+
+        // camera motion (keyboard)
+        float step = 3.0f * delta_time;
+        if (m_window->is_key_pressed(Key::W))  m_camera.dolly( step);
+        if (m_window->is_key_pressed(Key::S))  m_camera.dolly(-step);
+        if (m_window->is_key_pressed(Key::A))  m_camera.truck(-step);
+        if (m_window->is_key_pressed(Key::D))  m_camera.truck( step);
+        if (m_window->is_key_pressed(Key::Space))  m_camera.pedestal( step);
+        if (m_window->is_key_pressed(Key::LeftControl))  m_camera.pedestal(-step);
+        if (m_window->is_key_pressed(Key::Q))  m_camera.roll( step);
+        if (m_window->is_key_pressed(Key::E))  m_camera.roll(-step);
     }
 
     void render() {
@@ -220,6 +236,18 @@ private:
         m_registry.destroy(view.begin(), view.end());
     }
 
+    void on_resize(WindowResizeEvent& e) {
+        m_camera.m_aspect = (float) e.size.x / (float) e.size.y;
+        m_camera.recalculate_projection();
+    }
+
+    void on_mouse_move(MouseMoveEvent& e) {
+        if (m_window->is_mouse_button_pressed(Mouse::ButtonLeft)) {
+            glm::vec2 delta = 0.003f * e.delta;
+            m_camera.pan(delta.x);
+            m_camera.tilt(delta.y);
+        }
+    }
 };
 
 

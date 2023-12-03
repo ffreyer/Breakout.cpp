@@ -17,7 +17,7 @@ private:
 public:
     Example3D() {
         if (init("Test Window", 800, 600)) {
-            m_scene.init();
+            m_scene.init(get_window());
         }
     }
 
@@ -27,7 +27,7 @@ public:
     };
 
     void on_event(AbstractEvent& event) override {
-        dispatch<WindowResizeEvent>(BIND_EVENT_FN(m_scene.on_resize), event);
+        m_scene.on_event(event);
     };
 
 };

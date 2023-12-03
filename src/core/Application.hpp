@@ -30,6 +30,8 @@ public:
     glm::vec2 get_mouse_position()   { return m_window->get_mouse_position(); }
     glm::ivec2 get_window_position() { return m_window->get_window_position(); }
     glm::ivec2 get_window_size()     { return m_window->get_window_size(); }
+    bool is_key_pressed(KeyCode key) { return m_window->is_key_pressed(key); }
+    bool is_mouse_button_pressed(MouseCode button) { return m_window->is_mouse_button_pressed(button); }
 
 // private:
     // process_events();

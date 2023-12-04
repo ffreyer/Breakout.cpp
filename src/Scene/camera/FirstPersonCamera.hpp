@@ -4,11 +4,12 @@
 
 // TODO: keep normalized matrices around
 class FirstPersonCamera : public PerspectiveCamera {
-public:
+private:
     glm::vec3 m_eyeposition;
     glm::vec3 m_viewdirection;
     glm::vec3 m_up;
 
+public:
     FirstPersonCamera() :
         m_eyeposition(glm::vec3(3.0f)),
         m_viewdirection(glm::vec3(-3.0f)),
@@ -25,6 +26,12 @@ public:
     void eyeposition(glm::vec3 v);
     void lookat(glm::vec3 v);
     void up(glm::vec3 v);
+    
+    // getters
+    glm::vec3 eyeposition() const { return m_eyeposition; }
+    glm::vec3 viewdirection() const { return m_viewdirection; }
+    glm::vec3 lookat() const { return m_eyeposition + m_viewdirection; }
+    glm::vec3 up() const { return m_up; }
     
     // camera motion names
     void pan(float angle); // left - right rotation (shake head)

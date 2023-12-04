@@ -39,6 +39,11 @@ public:
         recalculate_projection();
     }
 
+    float fov() const { return m_fov; }
+    float near() const { return m_near; }
+    float far() const { return m_far; }
+    float aspect() const { return m_aspect; }
+
     void recalculate_projection() override {
         m_projection = glm::perspective(glm::radians(m_fov), m_aspect, m_near, m_far);
         m_projectionview = m_projection * m_view;

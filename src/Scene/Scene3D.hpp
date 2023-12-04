@@ -5,11 +5,14 @@
 
 #include "AbstractScene.hpp"
 #include "callbacks.hpp"
+
 #include "renderer/MeshRenderer.hpp"
+#include "renderer/Skybox.hpp"
+
 #include "camera/FirstPersonCamera.hpp"
-#include "../core/print.hpp"
-#include "../core/Events.hpp"
-#include "../opengl/Window.hpp"
+#include "core/print.hpp"
+#include "core/Events.hpp"
+#include "opengl/Window.hpp"
 
 
 #include "../opengl/GLTexture.hpp"
@@ -20,93 +23,9 @@
 
 class Scene3D : public AbstractScene {
 private:
-    struct SkyBox {
-        GLVertexArray va;
-        GLShader shader;
-        GLCubeMap cubemap;
-
-        SkyBox(std::array<std::string, 6> filepaths) {
-            // load texture
-            int width, height, channels;
-            unsigned char* data;
-            cubemap.bind();
-            cubemap.set_internal_format(GLCubeMap::RGB);
-            stbi_set_flip_vertically_on_load(false);
-            for (int i = 0; i < 6; i++) {
-                data = stbi_load(filepaths[i].c_str(), &width, &height, &channels, 0);
-                cubemap.set_data(data, channels_to_gl_type(channels), width, height, GLCubeMap::RIGHT + i);
-                stbi_image_free(data);
-            }
-
-            // generate vertexarray
-            float vertices[] = {
-                -1.0f,  1.0f, -1.0f,
-                -1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-                1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-
-                -1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-
-                1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-
-                -1.0f, -1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-
-                -1.0f,  1.0f, -1.0f,
-                1.0f,  1.0f, -1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f, -1.0f,
-
-                -1.0f, -1.0f, -1.0f,
-                -1.0f, -1.0f,  1.0f,
-                1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-                -1.0f, -1.0f,  1.0f,
-                1.0f, -1.0f,  1.0f
-            };
-            auto layout = GLBufferLayout({GLBufferElement("Position", GLType::Float3)});
-            std::shared_ptr<GLVertexBuffer> buffer = std::make_shared<GLVertexBuffer>(vertices, sizeof(vertices));
-            buffer->set_layout(layout);
-            va.push(buffer);
-
-            // Generate shader
-            shader.add_source("../assets/shaders/skybox.vert");
-            shader.add_source("../assets/shaders/skybox.frag");
-            shader.compile();
-        }
-
-        void render(FirstPersonCamera camera){
-            glDepthFunc(GL_LEQUAL); 
-            shader.bind();
-            va.bind();
-            cubemap.bind();
-            shader.set_uniform("view", glm::mat4(glm::mat3(camera.m_view)));
-            shader.set_uniform("projection", camera.m_projection);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glDepthFunc(GL_LESS); 
-        }
-    };
-
     FirstPersonCamera m_camera;
     Window* m_window = nullptr;
+
     std::unique_ptr<SkyBox> skybox = nullptr;
     MeshRenderer m_mesh_renderer;
 
@@ -181,7 +100,7 @@ public:
             m_mesh_renderer.draw_mesh(Entity(m_registry, e));
         m_mesh_renderer.end();
 
-        skybox->render(m_camera);
+        skybox->render(m_camera.m_view, m_camera.m_projection);
     }
 
 private:

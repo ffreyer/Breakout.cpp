@@ -5,70 +5,18 @@
 
 #include "AbstractScene.hpp"
 #include "callbacks.hpp"
-#include "renderer/Renderer2D.hpp"
+#include "renderer/MeshRenderer.hpp"
 #include "camera/FirstPersonCamera.hpp"
 #include "../core/print.hpp"
 #include "../core/Events.hpp"
-#include "../opengl/GLTexture.hpp"
 #include "../opengl/Window.hpp"
 
+
+#include "../opengl/GLTexture.hpp"
 
 // TODO: 
 // Move definitions to cpp file
 
-namespace Component {
-    struct SimpleMesh {
-        std::vector<uint32_t> indices;
-        std::vector<float> vertices;
-        GLVertexArray va;
-
-        // TODO: check if move is the correct tool here
-        SimpleMesh(std::vector<uint32_t>& idxs, std::vector<float>& data, GLBufferLayout& layout)
-            : indices(idxs), vertices(data)
-        {
-            std::shared_ptr<GLIndexBuffer> ibuffer = std::make_shared<GLIndexBuffer>(indices.data(), sizeof(float) * indices.size());
-            std::shared_ptr<GLVertexBuffer> vbuffer = std::make_shared<GLVertexBuffer>(vertices.data(), sizeof(float) * vertices.size());
-            vbuffer->set_layout(layout);
-            va.set(ibuffer);
-            va.push(vbuffer);
-        }
-
-        void bind() const { va.bind(); }
-        void unbind() const { va.unbind(); }
-        uint32_t size() const { return va.index_count(); }
-    };
-
-    struct SimpleTexture2D {
-        int width = 0, height = 0;
-        GLTexture texture;
-
-        SimpleTexture2D(const char* filepath) 
-            : texture(GLTexture(2))
-        {
-            int channels;
-            stbi_set_flip_vertically_on_load(true);
-            unsigned char* image = stbi_load(filepath, &width, &height, &channels, 0);
-            unsigned int format = channels_to_gl_type(channels);
-            texture.set_internal_format(format);
-            texture.set_data(image, format, width, height);
-            stbi_image_free(image);
-        };
-
-        void bind(GLShader& shader, unsigned int slot) {
-            char name[10];
-            sprintf_s(name, 10, "texture%u", slot);
-            shader.set_uniform(name, (int) slot);
-            glActiveTexture(GL_TEXTURE0 + slot);
-            texture.bind();
-        }
-        void bind() {
-            texture.bind();
-        };
-        void unbind() {
-            texture.unbind();
-        };
-    };
-}
 
 class Scene3D : public AbstractScene {
 private:
@@ -158,9 +106,9 @@ private:
     };
 
     FirstPersonCamera m_camera;
-    std::shared_ptr<GLShader> m_mesh_shader;
     Window* m_window = nullptr;
     std::unique_ptr<SkyBox> skybox = nullptr;
+    MeshRenderer m_mesh_renderer;
 
 public:
 
@@ -170,71 +118,12 @@ public:
 
     void init(Window* window) {
         m_window = window;
-
-        // Example Cube
-        std::vector<float> vertices = {
-            // back
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f,
-
-            // front
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
-
-            // left
-            -0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-
-            // right
-             0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-
-            // bottom
-            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 1.0f,
-
-            // top
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f,
-        };
-
-        std::vector<uint32_t> indices = {
-            0, 1, 2, 1, 2, 3, // back
-            4, 5, 6, 5, 6, 7, // front
-            8, 9, 10, 9, 10, 11, // left
-            12, 13, 14, 13, 14, 15, // right
-            16, 17, 18, 17, 18, 19, // bottom
-            20, 21, 22, 21, 22, 23  // top
-        };
+        m_mesh_renderer.init();
 
         Entity cube = create_entity("Simple Cube");
-        auto layout = GLBufferLayout({
-            GLBufferElement("Position", GLType::Float3),
-            GLBufferElement("Normal", GLType::Float3),
-            GLBufferElement("Texture Coordinates", GLType::Float2),
-        });
-        cube.add<Component::SimpleMesh>(indices, vertices, layout);
+        m_mesh_renderer.add_cube_mesh(cube);
         cube.add<Component::Transform>();
         cube.add<Component::SimpleTexture2D>("../assets/wood_container.jpg");
-
-        // shader
-        m_mesh_shader = std::make_shared<GLShader>();
-        m_mesh_shader->add_source("../assets/shaders/triangle.vert");
-        m_mesh_shader->add_source("../assets/shaders/lighting.frag");
-        m_mesh_shader->add_source("../assets/shaders/triangle.frag");
-        m_mesh_shader->compile();
 
         // cam
         m_camera.eyeposition(glm::vec3(3.0f, 0.0, 0.0f));
@@ -285,31 +174,12 @@ public:
 
         m_camera.recalculate_view();
 
+        // Render meshes
         auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
-
-        m_mesh_shader->bind();
-
-        // camera
-        m_mesh_shader->set_uniform("projectionview", m_camera.m_projectionview);
-        // m_mesh_shader->set_uniform("projection", m_camera.m_projection);
-        // m_mesh_shader->set_uniform("view", m_camera.m_view);
-
-        // Basic directional light
-        m_mesh_shader->set_uniform("light_direction", glm::normalize(glm::vec3(0.0f, -1.0f, 0.0)));
-        m_mesh_shader->set_uniform("light_color", glm::vec3(0.8f, 0.95f, 1.0f));
-        m_mesh_shader->set_uniform("ambient_color", glm::vec3(0.2f));
-
-        for (entt::entity e : view) {
-            auto& mesh = m_registry.get<Component::SimpleMesh>(e);
-            auto& texture = m_registry.get<Component::SimpleTexture2D>(e);
-            auto& transform = m_registry.get<Component::Transform>(e);
-            m_mesh_shader->set_uniform("model", transform.get_matrix());
-            m_mesh_shader->set_uniform("normalmatrix", transform.get_normalmatrix());
-            texture.bind(*m_mesh_shader, 0);
-            mesh.bind();
-            glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
-        }
-        GLVertexArray::unbind();
+        m_mesh_renderer.begin(m_camera.m_projectionview);
+        for (entt::entity e : view)
+            m_mesh_renderer.draw_mesh(Entity(m_registry, e));
+        m_mesh_renderer.end();
 
         skybox->render(m_camera);
     }

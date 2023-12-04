@@ -48,20 +48,20 @@ GLBufferLayout GLVertexBuffer::get_layout() const {
 
 // GLIndexBuffer
 
-GLIndexBuffer::GLIndexBuffer(size_t bytesize, unsigned int mode)
-    : m_size(bytesize), m_mode(mode)
+GLIndexBuffer::GLIndexBuffer(size_t size, unsigned int mode)
+    : m_size(size), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, nullptr, m_mode);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size * sizeof(uint32_t), nullptr, m_mode);
 }
 
-GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t bytesize, unsigned int mode)
-    : m_size(bytesize), m_mode(mode)
+GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode)
+    : m_size(size), m_mode(mode)
 {
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size, indices, m_mode);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size * sizeof(uint32_t), indices, m_mode);
 }
 
 GLIndexBuffer::~GLIndexBuffer() {

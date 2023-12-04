@@ -1,6 +1,8 @@
 #pragma once
 
 #include <exception>
+#include <array>
+#include <vector>
 
 #include <glad/gl.h>
 #include <glm/glm.hpp>
@@ -137,6 +139,15 @@ public:
             generate_mipmap();
     }
 
+	template <typename T, size_t N>
+	void set_data(std::array<T, N>& data, GLenum format, size_t width, size_t height = 0, size_t depth = 0) {
+		set_data(data.data(), format, width, height, depth);
+	}
+	template <typename T>
+	void set_data(std::vector<T>& data, GLenum format, size_t width, size_t height = 0, size_t depth = 0) {
+		set_data(data.data(), format, width, height, depth);
+	}
+
 private:
     static GLenum texture_type(unsigned char dims) {
         if (dims == 1)
@@ -181,6 +192,15 @@ public:
         if (m_mipmapped)
             generate_mipmap();
     }
+
+	template <typename T, size_t N>
+	void set_data(std::array<T, N>& data, GLenum format, size_t width, size_t height, GLenum side) {
+		set_data(data.data(), format, width, height, side);
+	}
+	template <typename T>
+	void set_data(std::vector<T>& data, GLenum format, size_t width, size_t height, GLenum side) {
+		set_data(data.data(), format, width, height, side);
+	}
 };
 
 static GLenum channels_to_gl_type(int channels) {

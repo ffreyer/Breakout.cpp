@@ -1,5 +1,7 @@
 #pragma once
 
+#include <exception>
+
 #include <glad/gl.h>
 #include <glm/glm.hpp>
 
@@ -7,16 +9,15 @@
 
 #include "GLTypeConvert.hpp"
 
-template <int Dim>
-class GLTexture {
-private:
+class AbstractGLTexture {
+protected:
+    const GLenum m_texture_type;
     unsigned int m_id = 0;
-    size_t m_size;
     bool m_mipmapped = false;
-    unsigned int m_internal_format = GL_RGBA;
+    GLenum m_internal_format = GL_RGBA;
 
 public:
-    enum : unsigned int {
+    enum : GLenum {
         // Wrapping directions
         WRAP_X = GL_TEXTURE_WRAP_S, WRAP_Y = GL_TEXTURE_WRAP_T, WRAP_Z = GL_TEXTURE_WRAP_R,
         // wrapping modes
@@ -35,47 +36,62 @@ public:
         SRGB = GL_SRGB, SRGB8 = GL_SRGB8, SRGB_ALPHA = GL_SRGB_ALPHA, SRGB8_ALPHA8 = GL_SRGB8_ALPHA8,
     };
 
-    GLTexture() {
+    AbstractGLTexture(GLenum texture_type) : m_texture_type(texture_type) {
         glGenTextures(1, &m_id);
-        // some defaults
-        switch (Dim) {
-        case 3: set_wrapping(WRAP_Z, GL_CLAMP_TO_EDGE);
-        case 2: set_wrapping(WRAP_Y, GL_CLAMP_TO_EDGE);
-        case 1: set_wrapping(WRAP_X, GL_CLAMP_TO_EDGE);
-        }
-        set_min_filter(LINEAR);
-        set_mag_filter(LINEAR);
     }
-    ~GLTexture() {
+
+    ~AbstractGLTexture() {
         glDeleteTextures(1, &m_id);
     };
 
-    void bind() const {
-        glBindTexture(texture_type(), m_id);
+    virtual void bind() const {
+        glBindTexture(m_texture_type, m_id);
     }
-    void unbind() const {
-        glBindTexture(texture_type(), 0);
-    }
-
-    template <typename T>
-    void set_data(T* data, unsigned int format, size_t width, size_t height = 0, size_t depth = 0) {
-        bind();
-        unsigned int gl_type = gl_type_convert<T>();
-        if constexpr(Dim == 1)
-            glTexImage1D(GL_TEXTURE_1D, 0, m_internal_format, width, 0, format, gl_type, data);
-        else if constexpr(Dim == 2)
-            glTexImage2D(GL_TEXTURE_2D, 0, m_internal_format, width, height, 0, format, gl_type, data);
-        else if constexpr(Dim == 3)
-            glTexImage3D(GL_TEXTURE_3D, 0, m_internal_format, width, height, depth, 0, format, gl_type, data);
-
-        if (m_mipmapped)
-            generate_mipmap();
+    virtual void unbind() const {
+        glBindTexture(m_texture_type, 0);
     }
 
     // Settings
+    virtual void set_min_filter(GLenum mode) const {
+        bind();
+        glTexParameteri(m_texture_type, GL_TEXTURE_MIN_FILTER, mode);
+    }
 
-    // what the gpu gets?
-    void set_internal_format(unsigned int format) {
+    virtual void set_min_filter(GLenum main, GLenum mipmap) const {
+        bind();
+        GLenum mode = 0;
+        if (main == NEAREST && mipmap == NEAREST)
+            mode = GL_NEAREST_MIPMAP_NEAREST;
+        else if (main == NEAREST && mipmap == LINEAR)
+            mode = GL_NEAREST_MIPMAP_LINEAR;
+        else if (main == LINEAR  && mipmap == LINEAR)
+            mode = GL_LINEAR_MIPMAP_LINEAR;
+        else if (main == LINEAR  && mipmap == NEAREST)
+            mode = GL_LINEAR_MIPMAP_NEAREST;
+
+        glTexParameteri(m_texture_type, GL_TEXTURE_MIN_FILTER, mode);
+    }
+
+    virtual void set_mag_filter(GLenum mode) const {
+        bind();
+        glTexParameteri(m_texture_type, GL_TEXTURE_MAG_FILTER, mode);
+    }
+
+    virtual void set_wrapping(GLenum dim, GLenum mode) const {
+        bind();
+        glTexParameterf(m_texture_type, dim, mode);
+    }
+
+    virtual void set_border_color(glm::vec3 color) const {
+        set_border_color(glm::vec4(color, 1.0));
+    }
+    virtual void set_border_color(glm::vec4 color) const {
+        bind();
+        glTexParameterfv(m_texture_type, GL_TEXTURE_BORDER_COLOR, (const float*) &color);
+    }
+
+    // format on gpu
+    void set_internal_format(GLenum format) {
         m_internal_format = format;
     }
 
@@ -83,56 +99,97 @@ public:
         if (enable) {
             m_mipmapped = enable;
             bind();
-            glGenerateMipmap(texture_type());
+            glGenerateMipmap(m_texture_type);
         }
     }
+};
 
-    void set_min_filter(unsigned int mode) const {
-        bind();
-        glTexParameteri(texture_type(), GL_TEXTURE_MIN_FILTER, mode);
+
+class GLTexture : public AbstractGLTexture {
+private:
+    unsigned char m_dimensions;
+public:
+    GLTexture(unsigned int dims)
+        : AbstractGLTexture(GLTexture::texture_type(dims)), m_dimensions(dims)
+    {
+        // some defaults
+        switch (dims) {
+        case 3: set_wrapping(WRAP_Z, GL_CLAMP_TO_EDGE);
+        case 2: set_wrapping(WRAP_Y, GL_CLAMP_TO_EDGE);
+        case 1: set_wrapping(WRAP_X, GL_CLAMP_TO_EDGE);
+        }
+        set_min_filter(LINEAR);
+        set_mag_filter(LINEAR);
     }
 
-    void set_min_filter(unsigned int main, unsigned int mipmap) const {
+    template <typename T>
+    void set_data(T* data, GLenum format, size_t width, size_t height = 0, size_t depth = 0) {
         bind();
-        unsigned int mode = 0;
-        if (main == GLTexture::NEAREST && mipmap == GLTexture::NEAREST)
-            mode = GL_NEAREST_MIPMAP_NEAREST;
-        else if (main == GLTexture::NEAREST && mipmap == GLTexture::LINEAR)
-            mode = GL_NEAREST_MIPMAP_LINEAR;
-        else if (main == GLTexture::LINEAR  && mipmap == GLTexture::LINEAR)
-            mode = GL_LINEAR_MIPMAP_LINEAR;
-        else if (main == GLTexture::LINEAR  && mipmap == GLTexture::NEAREST)
-            mode = GL_LINEAR_MIPMAP_NEAREST;
+        GLenum gl_type = gl_type_convert<T>();
+        if (m_dimensions == 1)
+            glTexImage1D(GL_TEXTURE_1D, 0, m_internal_format, width, 0, format, gl_type, data);
+        else if (m_dimensions == 2)
+            glTexImage2D(GL_TEXTURE_2D, 0, m_internal_format, width, height, 0, format, gl_type, data);
+        else if (m_dimensions == 3)
+            glTexImage3D(GL_TEXTURE_3D, 0, m_internal_format, width, height, depth, 0, format, gl_type, data);
 
-        glTexParameteri(texture_type(), GL_TEXTURE_MIN_FILTER, mode);
-    }
-
-    void set_mag_filter(unsigned int mode) const {
-        bind();
-        glTexParameteri(texture_type(), GL_TEXTURE_MAG_FILTER, mode);
-    }
-
-    void set_wrapping(unsigned int dim, unsigned int mode) const {
-        bind();
-        glTexParameterf(texture_type(), dim, mode);
-    }
-
-    void set_border_color(glm::vec3 color) const {
-        set_border_color(glm::vec4(color, 1.0));
-    }
-    void set_border_color(glm::vec4 color) const {
-        bind();
-        glTexParameterfv(texture_type(), GL_TEXTURE_BORDER_COLOR, color);
+        if (m_mipmapped)
+            generate_mipmap();
     }
 
 private:
-    const unsigned int texture_type() const {
-        if constexpr(Dim == 1)
+    static GLenum texture_type(unsigned char dims) {
+        if (dims == 1)
             return GL_TEXTURE_1D;
-        else if constexpr(Dim == 2)
+        else if (dims == 2)
             return GL_TEXTURE_2D;
-        else if constexpr(Dim == 3)
+        else if (dims == 3)
             return GL_TEXTURE_3D;
+        else {
+            throw std::invalid_argument("Invalid dimension for GLTexture.");
+        }
     }
-
 };
+
+
+class GLCubeMap : public AbstractGLTexture {
+public:
+    enum : GLenum {
+        RIGHT  = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+        LEFT   = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+        TOP    = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+        BOTTOM = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        BACK   = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+        FRONT  = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+    };
+
+    GLCubeMap() : AbstractGLTexture(GL_TEXTURE_CUBE_MAP)
+    {
+        set_wrapping(WRAP_X, GL_CLAMP_TO_EDGE);
+        set_wrapping(WRAP_Y, GL_CLAMP_TO_EDGE);
+        set_wrapping(WRAP_Z, GL_CLAMP_TO_EDGE);
+        set_min_filter(LINEAR);
+        set_mag_filter(LINEAR);
+    }
+    
+    template <typename T>
+    void set_data(T* data, GLenum format, size_t width, size_t height, GLenum side) {
+        bind();
+        GLenum gl_type = gl_type_convert<T>();
+        glTexImage2D(side, 0, m_internal_format, width, height, 0, format, gl_type, data);
+
+        if (m_mipmapped)
+            generate_mipmap();
+    }
+};
+
+static GLenum channels_to_gl_type(int channels) {
+    switch (channels) {
+        case 1: return AbstractGLTexture::RED;
+        case 2: return AbstractGLTexture::RG;
+        case 3: return AbstractGLTexture::RGB;
+        case 4: return AbstractGLTexture::RGBA;
+    }
+    return 0;
+}
+    

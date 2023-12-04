@@ -40,19 +40,15 @@ namespace Component {
 
     struct SimpleTexture2D {
         int width = 0, height = 0;
-        GLTexture<2> texture;
+        GLTexture texture;
 
-        SimpleTexture2D(const char* filepath) {
+        SimpleTexture2D(const char* filepath) 
+            : texture(GLTexture(2))
+        {
             int channels;
             stbi_set_flip_vertically_on_load(true);
             unsigned char* image = stbi_load(filepath, &width, &height, &channels, 0);
-            unsigned int format;
-            switch (channels) {
-            case 1: format = GLTexture<2>::RED;  break;
-            case 2: format = GLTexture<2>::RG;   break;
-            case 3: format = GLTexture<2>::RGB;  break;
-            case 4: format = GLTexture<2>::RGBA; break;
-            }
+            unsigned int format = channels_to_gl_type(channels);
             texture.set_internal_format(format);
             texture.set_data(image, format, width, height);
             stbi_image_free(image);
@@ -61,7 +57,7 @@ namespace Component {
         void bind(GLShader& shader, unsigned int slot) {
             char name[10];
             sprintf_s(name, 10, "texture%u", slot);
-            shader.set_uniform(name, 0);
+            shader.set_uniform(name, (int) slot);
             glActiveTexture(GL_TEXTURE0 + slot);
             texture.bind();
         }
@@ -76,9 +72,95 @@ namespace Component {
 
 class Scene3D : public AbstractScene {
 private:
+    struct SkyBox {
+        GLVertexArray va;
+        GLShader shader;
+        GLCubeMap cubemap;
+
+        SkyBox(std::array<std::string, 6> filepaths) {
+            // load texture
+            int width, height, channels;
+            unsigned char* data;
+            cubemap.bind();
+            cubemap.set_internal_format(GLCubeMap::RGB);
+            stbi_set_flip_vertically_on_load(false);
+            for (int i = 0; i < 6; i++) {
+                data = stbi_load(filepaths[i].c_str(), &width, &height, &channels, 0);
+                cubemap.set_data(data, channels_to_gl_type(channels), width, height, GLCubeMap::RIGHT + i);
+                stbi_image_free(data);
+            }
+
+            // generate vertexarray
+            float vertices[] = {
+                -1.0f,  1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+                1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                -1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+
+                -1.0f, -1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+
+                -1.0f,  1.0f, -1.0f,
+                1.0f,  1.0f, -1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                -1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f,  1.0f,
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f,  1.0f,
+                1.0f, -1.0f,  1.0f
+            };
+            auto layout = GLBufferLayout({GLBufferElement("Position", GLType::Float3)});
+            std::shared_ptr<GLVertexBuffer> buffer = std::make_shared<GLVertexBuffer>(vertices, sizeof(vertices));
+            buffer->set_layout(layout);
+            va.push(buffer);
+
+            // Generate shader
+            shader.add_source("../assets/shaders/skybox.vert");
+            shader.add_source("../assets/shaders/skybox.frag");
+            shader.compile();
+        }
+
+        void render(FirstPersonCamera camera){
+            glDepthFunc(GL_LEQUAL); 
+            shader.bind();
+            va.bind();
+            cubemap.bind();
+            shader.set_uniform("view", glm::mat4(glm::mat3(camera.m_view)));
+            shader.set_uniform("projection", camera.m_projection);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDepthFunc(GL_LESS); 
+        }
+    };
+
     FirstPersonCamera m_camera;
     std::shared_ptr<GLShader> m_mesh_shader;
     Window* m_window = nullptr;
+    std::unique_ptr<SkyBox> skybox = nullptr;
 
 public:
 
@@ -157,6 +239,16 @@ public:
         // cam
         m_camera.eyeposition(glm::vec3(3.0f, 0.0, 0.0f));
         m_camera.lookat(glm::vec3(0.0f));
+
+        // Skybox
+        skybox = std::make_unique<SkyBox>(std::array<std::string, 6>({
+            "../assets/skybox/right.jpg",
+            "../assets/skybox/left.jpg",
+            "../assets/skybox/top.jpg",
+            "../assets/skybox/bottom.jpg",
+            "../assets/skybox/front.jpg",
+            "../assets/skybox/back.jpg",
+        }));
     }
 
     void on_event(AbstractEvent& event) {
@@ -218,6 +310,8 @@ public:
             glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
         }
         GLVertexArray::unbind();
+
+        skybox->render(m_camera);
     }
 
 private:

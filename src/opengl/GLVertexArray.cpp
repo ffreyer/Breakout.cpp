@@ -1,5 +1,5 @@
 
-#include "VertexArray.hpp"
+#include "GLVertexArray.hpp"
 
 // GLVertexBuffer
 

@@ -1,7 +1,7 @@
 // only need this for value ptr so I guess we keep it here?
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Shader.hpp"
+#include "GLShader.hpp"
 
 #include <iostream>
 

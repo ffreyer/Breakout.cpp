@@ -4,8 +4,8 @@
 
 #include <glm/glm.hpp>
 
-#include "../opengl/Shader.hpp"
-#include "../opengl/VertexArray.hpp"
+#include "../opengl/GLShader.hpp"
+#include "../opengl/GLVertexArray.hpp"
 
 // TODO: make these class constants?
 #define RENDERER2D_MAX_QUADS 20000

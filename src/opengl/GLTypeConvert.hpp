@@ -8,8 +8,10 @@ template <typename T>
 template <> [[maybe_unused]] GLenum gl_type_convert<float>() { return GL_FLOAT; }
 template <> [[maybe_unused]] GLenum gl_type_convert<int>() { return GL_INT; }
 template <> [[maybe_unused]] GLenum gl_type_convert<unsigned int>() { return GL_UNSIGNED_INT; }
-template <> [[maybe_unused]] GLenum gl_type_convert<char>() { return GL_BYTE; }
-template <> [[maybe_unused]] GLenum gl_type_convert<unsigned char>() { return GL_UNSIGNED_BYTE; }
+template <> [[maybe_unused]] GLenum gl_type_convert<int8_t>() { return GL_BYTE; }
+template <> [[maybe_unused]] GLenum gl_type_convert<uint8_t>() { return GL_UNSIGNED_BYTE; }
+template <> [[maybe_unused]] GLenum gl_type_convert<int16_t>() { return GL_SHORT; }
+template <> [[maybe_unused]] GLenum gl_type_convert<uint16_t>() { return GL_UNSIGNED_SHORT; }
 template <> [[maybe_unused]] GLenum gl_type_convert<bool>() { return GL_BOOL; }
 
 /*

@@ -6,9 +6,23 @@
 
 #include <glad/gl.h>
 
+/*
+Ref: Valid types
+glVertexAttribPointer + glVertexAttribIPointer
+	GL_BYTE, GL_UNSIGNED_BYTE, 
+	GL_SHORT, GL_UNSIGNED_SHORT, 
+	GL_INT, and GL_UNSIGNED_INT
+glVertexAttribPointer:
+	GL_HALF_FLOAT, GL_FLOAT, GL_DOUBLE, 
+	GL_INT_2_10_10_10_REV, 
+	GL_UNSIGNED_INT_2_10_10_10_REV
+*/
+
 // Aliases for GL types so we can keep things seperated
 enum class GLType{
 	Bool,
+	UShort, UShort2, UShort3, UShort4,
+	Short, Short2, Short3, Short4,
 	Int, Int2, Int3, Int4,
 	Float, Float2, Float3, Float4,
 	Mat3, Mat4
@@ -17,6 +31,14 @@ enum class GLType{
 static unsigned int gltype_byte_size(GLType type) {
     switch (type) {
 		case GLType::Bool: return 1;
+		case GLType::Short:  return 2;
+		case GLType::Short2: return 2 * 2;
+		case GLType::Short3: return 2 * 3;
+		case GLType::Short4: return 2 * 4;
+		case GLType::UShort:  return 2;
+		case GLType::UShort2: return 2 * 2;
+		case GLType::UShort3: return 2 * 3;
+		case GLType::UShort4: return 2 * 4;
 		case GLType::Int:  return 4;
 		case GLType::Int2: return 4 * 2;
 		case GLType::Int3: return 4 * 3;
@@ -35,6 +57,14 @@ static unsigned int gltype_byte_size(GLType type) {
 static unsigned int gltype_length(GLType type) {
 	switch (type) {
         case GLType::Bool: return 1;
+		case GLType::Short:  return 1;
+		case GLType::Short2: return 2;
+		case GLType::Short3: return 3;
+		case GLType::Short4: return 4;
+		case GLType::UShort:  return 1;
+		case GLType::UShort2: return 2;
+		case GLType::UShort3: return 3;
+		case GLType::UShort4: return 4;
         case GLType::Int:  return 1;
         case GLType::Int2: return 2;
         case GLType::Int3: return 3;
@@ -53,6 +83,14 @@ static unsigned int gltype_length(GLType type) {
 [[maybe_unused]] static GLenum gl_native_type(GLType type) {
 	switch (type) {
         case GLType::Bool: return GL_BOOL;
+		case GLType::Short:  return GL_SHORT;
+		case GLType::Short2: return GL_SHORT;
+		case GLType::Short3: return GL_SHORT;
+		case GLType::Short4: return GL_SHORT;
+		case GLType::UShort:  return GL_UNSIGNED_SHORT;
+		case GLType::UShort2: return GL_UNSIGNED_SHORT;
+		case GLType::UShort3: return GL_UNSIGNED_SHORT;
+		case GLType::UShort4: return GL_UNSIGNED_SHORT;
         case GLType::Int:  return GL_INT;
         case GLType::Int2: return GL_INT;
         case GLType::Int3: return GL_INT;

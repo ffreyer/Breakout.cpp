@@ -111,6 +111,14 @@ void GLVertexArray::push(std::shared_ptr<GLVertexBuffer> buffer) {
 			case GLType::Int2:
 			case GLType::Int3:
 			case GLType::Int4:
+			case GLType::Short:
+			case GLType::Short2:
+			case GLType::Short3:
+			case GLType::Short4:
+			case GLType::UShort:
+			case GLType::UShort2:
+			case GLType::UShort3:
+			case GLType::UShort4:
 			{
 				glEnableVertexAttribArray(m_buffer_idx);
 				glVertexAttribIPointer(

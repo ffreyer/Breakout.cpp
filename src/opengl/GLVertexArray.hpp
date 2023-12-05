@@ -16,6 +16,11 @@ private:
 	unsigned int m_mode;
 
 public:
+	enum : GLenum {
+		STREAM_DRAW = GL_STREAM_DRAW, STREAM_READ = GL_STREAM_READ, STREAM_COPY = GL_STREAM_COPY, 
+		STATIC_DRAW = GL_STATIC_DRAW, STATIC_READ = GL_STATIC_READ, STATIC_COPY = GL_STATIC_COPY, 
+		DYNAMIC_DRAW = GL_DYNAMIC_DRAW, DYNAMIC_READ = GL_DYNAMIC_READ, DYNAMIC_COPY = GL_DYNAMIC_COPY
+	};
 	
 	GLVertexBuffer(size_t bytesize, unsigned int mode = GL_STREAM_DRAW);
 	GLVertexBuffer(void* vertices, size_t bytesize, unsigned int mode = GL_STREAM_DRAW);
@@ -48,7 +53,12 @@ private:
 	unsigned int m_mode;
 
 public:
-	
+	enum : GLenum {
+		STREAM_DRAW = GL_STREAM_DRAW, STREAM_READ = GL_STREAM_READ, STREAM_COPY = GL_STREAM_COPY, 
+		STATIC_DRAW = GL_STATIC_DRAW, STATIC_READ = GL_STATIC_READ, STATIC_COPY = GL_STATIC_COPY, 
+		DYNAMIC_DRAW = GL_DYNAMIC_DRAW, DYNAMIC_READ = GL_DYNAMIC_READ, DYNAMIC_COPY = GL_DYNAMIC_COPY
+	};
+
 	GLIndexBuffer(size_t size, unsigned int mode = GL_STATIC_DRAW);
 	GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode = GL_STATIC_DRAW);
 	template <size_t N>

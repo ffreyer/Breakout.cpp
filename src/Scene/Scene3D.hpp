@@ -7,6 +7,7 @@
 #include "callbacks.hpp"
 
 #include "renderer/MeshRenderer.hpp"
+#include "renderer/VoxelRenderer.hpp"
 #include "renderer/Skybox.hpp"
 
 #include "camera/FirstPersonCamera.hpp"
@@ -28,6 +29,7 @@ private:
 
     std::unique_ptr<SkyBox> skybox = nullptr;
     MeshRenderer m_mesh_renderer;
+    VoxelRenderer m_voxel_renderer;
 
 public:
 
@@ -38,11 +40,21 @@ public:
     void init(Window* window) {
         m_window = window;
         m_mesh_renderer.init();
+        m_voxel_renderer.init();
 
-        Entity cube = create_entity("Simple Cube");
+        // Sample Cube
+        Entity cube = create_entity("Sample Cube");
         m_mesh_renderer.add_cube_mesh(cube);
         cube.add<Component::Transform>();
         cube.add<Component::SimpleTexture2D>("../assets/wood_container.jpg");
+
+        // Sample Voxel Chunk
+        Entity chunk = create_entity("Sample Chunk");
+        chunk.add<Component::Chunk>(Component::Chunk::sample_data());
+        chunk.add<Component::Transform>();
+        auto& transform = chunk.get<Component::Transform>();
+        transform.scale = glm::vec3(1.0f / (float) Component::Chunk::LENGTH);
+        transform.position = glm::vec3(-8.0f, -24.0f, -8.0f);
 
         // cam
         m_camera.eyeposition(glm::vec3(3.0f, 0.0, 0.0f));
@@ -68,7 +80,7 @@ public:
         resolve_on_update();
         resolve_scheduled_deletes();
 
-        auto view = m_registry.view<Component::Transform>();
+        auto view = m_registry.view<Component::Transform>(entt::exclude<Component::Chunk>);
         for(entt::entity e : view) {
             auto& transform = m_registry.get<Component::Transform>(e);
             transform.rotate_by(glm::normalize(glm::vec3(-1.0f, 1.0f, -0.5f)), delta_time);
@@ -94,11 +106,21 @@ public:
         m_camera.recalculate_view();
 
         // Render meshes
-        auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
-        m_mesh_renderer.begin(m_camera.m_projectionview);
-        for (entt::entity e : view)
-            m_mesh_renderer.draw_mesh(Entity(m_registry, e));
-        m_mesh_renderer.end();
+        {
+            auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
+            m_mesh_renderer.begin(m_camera.m_projectionview);
+            for (entt::entity e : view)
+                m_mesh_renderer.draw_mesh(Entity(m_registry, e));
+            m_mesh_renderer.end();
+        }
+
+        {
+            auto view = m_registry.view<Component::Chunk, Component::Transform>();
+            m_voxel_renderer.begin(m_camera.m_projectionview);
+            for (entt::entity e : view)
+                m_voxel_renderer.render(Entity(m_registry, e));
+            m_voxel_renderer.end();
+        }
 
         skybox->render(m_camera.m_view, m_camera.m_projection);
     }

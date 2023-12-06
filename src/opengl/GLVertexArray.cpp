@@ -1,87 +1,43 @@
 
 #include "GLVertexArray.hpp"
 
-// GLVertexBuffer
-
-GLVertexBuffer::GLVertexBuffer(size_t bytesize, unsigned int mode)
-    : m_size(bytesize), m_mode(mode)
+// Generic buffer
+GLBuffer::GLBuffer(GLenum buffer_type, void* vertices, size_t bytesize, unsigned int mode)
+    : m_buffer_type(buffer_type), m_mode(mode), m_size(bytesize)
 {
     glGenBuffers(1, &m_id);
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ARRAY_BUFFER, m_size, nullptr, m_mode);
+    glBindBuffer(m_buffer_type, m_id);
+    glBufferData(m_buffer_type, m_size, vertices, m_mode);
 }
 
-GLVertexBuffer::GLVertexBuffer(void* vertices, size_t bytesize, unsigned int mode)
-    : m_size(bytesize), m_mode(mode)
-{
-    glGenBuffers(1, &m_id);
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ARRAY_BUFFER, m_size, vertices, m_mode);
-}
-
-GLVertexBuffer::~GLVertexBuffer() {
+GLBuffer::~GLBuffer() {
     glDeleteBuffers(1, &m_id);
 }
 
-void GLVertexBuffer::set_data(const void* vertices, unsigned int bytesize) {
+void GLBuffer::set_data(const void* vertices, unsigned int bytesize) {
     bind();
     m_size = bytesize;
-    glBufferSubData(GL_ARRAY_BUFFER, 0, m_size, vertices);
+    glBufferSubData(m_buffer_type, 0, m_size, vertices);
 }
+
+void GLBuffer::bind() const {
+    glBindBuffer(m_buffer_type, m_id);
+}
+
+void GLBuffer::unbind() const {
+    glBindBuffer(m_buffer_type, 0);
+}
+
+
+// GLVertexBuffer
 
 void GLVertexBuffer::set_layout(const GLBufferLayout& layout) {
     m_layout = layout;
 }
 
-void GLVertexBuffer::bind() const {
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-}
-
-void GLVertexBuffer::unbind() const {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 GLBufferLayout GLVertexBuffer::get_layout() const {
 	return m_layout;
 }
-
-
-// GLIndexBuffer
-
-GLIndexBuffer::GLIndexBuffer(size_t size, unsigned int mode)
-    : m_size(size), m_mode(mode)
-{
-    glGenBuffers(1, &m_id);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size * sizeof(uint32_t), nullptr, m_mode);
-}
-
-GLIndexBuffer::GLIndexBuffer(uint32_t* indices, size_t size, unsigned int mode)
-    : m_size(size), m_mode(mode)
-{
-    glGenBuffers(1, &m_id);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size * sizeof(uint32_t), indices, m_mode);
-}
-
-GLIndexBuffer::~GLIndexBuffer() {
-    glDeleteBuffers(1, &m_id);
-}
-
-void GLIndexBuffer::set(const uint32_t * indices, size_t bytesize) {
-    bind();
-    m_size = bytesize;
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_size, indices);
-}
-
-void GLIndexBuffer::bind() const {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-}
-
-void GLIndexBuffer::unbind() const {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
 
 // GLVertexArray
 

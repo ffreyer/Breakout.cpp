@@ -15,8 +15,7 @@
 #include "core/Events.hpp"
 #include "opengl/Window.hpp"
 
-
-#include "../opengl/GLTexture.hpp"
+#include "opengl/GLTexture.hpp"
 
 // TODO: 
 // Move definitions to cpp file

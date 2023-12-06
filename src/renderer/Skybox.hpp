@@ -2,10 +2,10 @@
 
 #include <array>
 
-#include "../opengl/GLTexture.hpp"
-#include "../opengl/GLTexture.hpp"
-#include "../opengl/GLVertexArray.hpp"
-#include "../opengl/GLShader.hpp"
+#include "opengl/GLTexture.hpp"
+#include "opengl/GLTexture.hpp"
+#include "opengl/GLVertexArray.hpp"
+#include "opengl/GLShader.hpp"
 
 class SkyBox {
 private:

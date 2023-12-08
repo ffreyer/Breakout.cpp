@@ -1,14 +1,16 @@
 #version 330 core
 
 flat in vec3 f_normal;
-flat in int f_id;
+in vec2 f_uv;
 
 out vec4 FragColor;
+
+uniform sampler2D texture_map;
 
 vec3 illuminate(vec3 normal, vec3 color);
 
 void main()
 {
-    vec3 color = vec3(0.4, 0.1, 0.8);
+    vec3 color = texture(texture_map, f_uv).rgb;
     FragColor = vec4(illuminate(f_normal, color), 1);
 }

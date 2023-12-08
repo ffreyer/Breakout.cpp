@@ -1,12 +1,15 @@
 #version 330 core
 
+// TODO: 
+// Use viewdir to discard invisible faces (reducing max_vertices to 12)
+
 layout (points) in;
 layout (triangle_strip, max_vertices = 24) out;
 
 flat in ivec3[] g_idx;
 
 flat out vec3 f_normal;
-flat out int f_id;
+out vec2 f_uv;
 
 uniform isampler3D block_id;
 
@@ -14,6 +17,26 @@ uniform mat4 projectionview;
 uniform mat4 model;
 uniform mat3 normalmatrix;
 
+// texture mapping
+// TODO: 
+// std140 packs things into vec4 which generates a mess here
+// Can we do better? maybe with packed & querrying offsets?
+layout(std140) uniform uv_lut_block {
+    ivec4 uv_lut[16 * 4 * 6];
+};
+uniform vec2 tex_uv_size;
+uniform ivec2 tex_index_size;
+
+const vec2 TEX_OFFSETS[4] = vec2[](vec2(0, 0), vec2(1, 0), vec2(0, 1), vec2(1, 1));
+
+vec2 get_uv(int id, int i) {
+    ivec4 sub = uv_lut[id / 4];
+    int idx = sub[int(mod(id, 4))];
+    vec2 idx2d = vec2(mod(idx, tex_index_size.x), idx / tex_index_size.x);
+    return tex_uv_size * (idx2d + TEX_OFFSETS[i]);
+}
+
+// Mesh generation constants
 const int MAX_INDEX = 16;
 
 const ivec3 OFFSETS[6] = ivec3[](
@@ -31,20 +54,13 @@ const vec3 FACES[24] = vec3[24](
     vec3(0, 0, 0), vec3(0, 1, 0), vec3(1, 0, 0), vec3(1, 1, 0)
 );
 
-// const vec3 FACES[6][4] = {
-//     {vec3(+0.5, -0.5, -0.5), vec3(+0.5, -0.5, +0.5), vec3(+0.5, +0.5, -0.5), vec3(+0.5, +0.5, +0.5)},
-//     {vec3(-0.5, -0.5, -0.5), vec3(-0.5, -0.5, +0.5), vec3(-0.5, +0.5, -0.5), vec3(-0.5, +0.5, +0.5)},
-//     {vec3(-0.5, +0.5, -0.5), vec3(-0.5, +0.5, +0.5), vec3(+0.5, +0.5, -0.5), vec3(+0.5, +0.5, +0.5)},
-//     {vec3(-0.5, -0.5, -0.5), vec3(-0.5, -0.5, +0.5), vec3(+0.5, -0.5, -0.5), vec3(+0.5, -0.5, +0.5)},
-//     {vec3(-0.5, -0.5, +0.5), vec3(-0.5, +0.5, +0.5), vec3(+0.5, -0.5, +0.5), vec3(+0.5, +0.5, +0.5)},
-//     {vec3(-0.5, -0.5, -0.5), vec3(-0.5, +0.5, -0.5), vec3(+0.5, -0.5, -0.5), vec3(+0.5, +0.5, -0.5)},
-// }
-
 const vec3 NORMALS[6] = vec3[6](
     vec3(+1, 0, 0), vec3(-1, 0, 0),
     vec3(0, +1, 0), vec3(0, -1, 0),
     vec3(0, 0, +1), vec3(0, 0, -1)
 );
+
+// Mesh/vertex gen
 
 bool verify(ivec3 idx) {
     return 
@@ -54,13 +70,12 @@ bool verify(ivec3 idx) {
 }
 
 void generate_face(mat4 pvm, int id, int neighbour_idx) {
-    // TODO: uv?
     vec3 normal = normalize(normalmatrix * NORMALS[neighbour_idx]);
     vec3 center = vec3(g_idx[0]);
     for (int i = 0; i < 4; i++) {
         gl_Position = pvm * vec4(center + FACES[4 * neighbour_idx + i], 1);
         f_normal = normal;
-        f_id = id;
+        f_uv = get_uv(6 * id + neighbour_idx, i);
         EmitVertex();
     }
     EndPrimitive();

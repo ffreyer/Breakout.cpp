@@ -81,6 +81,13 @@ unsigned int GLShader::get_uniform_location(const std::string &name) const {
     return id;
 }
 
+unsigned int GLShader::get_block_index(const std::string &name) const {
+    unsigned int id = glGetUniformBlockIndex(m_id, name.c_str());
+    if (id == -1)
+        std::cout << "Failed to find block index of " << name << std::endl;
+    return id;
+}
+
 void GLShader::set_uniform(const std::string &name, bool v1) const {
     glUniform1i(get_uniform_location(name), v1);
 }
@@ -139,6 +146,20 @@ void GLShader::set_uniform(const std::string &name, glm::vec3 vec) const {
 }
 void GLShader::set_uniform(const std::string &name, glm::vec4 vec) const {
     glUniform4fv(get_uniform_location(name), 1, glm::value_ptr(vec));
+}
+
+void GLShader::set_uniform(const std::string &name, glm::ivec2 vec) const {
+    glUniform2iv(get_uniform_location(name), 1, glm::value_ptr(vec));
+}
+void GLShader::set_uniform(const std::string &name, glm::ivec3 vec) const {
+    glUniform3iv(get_uniform_location(name), 1, glm::value_ptr(vec));
+}
+void GLShader::set_uniform(const std::string &name, glm::ivec4 vec) const {
+    glUniform4iv(get_uniform_location(name), 1, glm::value_ptr(vec));
+}
+
+void GLShader::set_uniform_block(const std::string &name, int trg) const {
+    glUniformBlockBinding(m_id, get_block_index(name), trg);
 }
 
 // Utility Functions / verbose Implementations

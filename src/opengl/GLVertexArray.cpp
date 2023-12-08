@@ -28,6 +28,10 @@ void GLBuffer::unbind() const {
     glBindBuffer(m_buffer_type, 0);
 }
 
+void GLBuffer::bind_buffer_base(uint32_t index) const {
+	glBindBufferBase(m_buffer_type, index, m_id);
+}
+
 
 // GLVertexBuffer
 

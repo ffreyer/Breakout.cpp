@@ -51,6 +51,7 @@ public:
 	void set_data(const void* vertices, unsigned int size);
 	void bind() const;
 	void unbind() const;
+	void bind_buffer_base(uint32_t index) const;
 	uint32_t bytesize() const { return m_size; }
 };
 
@@ -123,5 +124,3 @@ public:
 	void update(size_t idx, void* data, size_t size) const;
 	void set_layout(size_t idx, const GLBufferLayout& layout) const;
 };
-
-

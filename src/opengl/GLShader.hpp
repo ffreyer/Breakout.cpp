@@ -64,9 +64,15 @@ public:
     void set_uniform(const std::string &name, const glm::mat3& mat) const;
     void set_uniform(const std::string &name, const glm::mat4& mat) const;
 
-    void set_uniform(const std::string &name, glm::vec2 mat) const;
-    void set_uniform(const std::string &name, glm::vec3 mat) const;
-    void set_uniform(const std::string &name, glm::vec4 mat) const;
+    void set_uniform(const std::string &name, glm::vec2 vec) const;
+    void set_uniform(const std::string &name, glm::vec3 vec) const;
+    void set_uniform(const std::string &name, glm::vec4 vec) const;
+
+    void set_uniform(const std::string &name, glm::ivec2 vec) const;
+    void set_uniform(const std::string &name, glm::ivec3 vec) const;
+    void set_uniform(const std::string &name, glm::ivec4 vec) const;
+
+    void set_uniform_block(const std::string &name, int trg) const;
 
 private:
     unsigned int generate_shader(const char *shader_source, unsigned int type) const;
@@ -83,4 +89,5 @@ private:
     ) const;
     
     unsigned int get_uniform_location(const std::string &name) const;
+    unsigned int get_block_index(const std::string &name) const;
 };

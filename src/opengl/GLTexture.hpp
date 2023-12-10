@@ -19,7 +19,6 @@ protected:
     bool m_mipmapped = false;
     GLenum m_internal_format = GL_RGBA;
 
-
 public:
     enum : GLenum {
         // Wrapping directions
@@ -48,6 +47,7 @@ public:
 
     virtual void bind() const;
     virtual void unbind() const;
+    unsigned int get_id() const;
 
     void set_slot(uint8_t slot);
     void set_min_filter(GLenum mode) const; // combined filter type
@@ -58,6 +58,10 @@ public:
     void set_border_color(glm::vec4 color) const;
     void set_internal_format(GLenum format);
     void generate_mipmap(bool enable = true);
+
+    virtual void resize(size_t width, size_t height = 0, size_t depth = 0) const;
+
+    friend class GLFramebuffer;
 };
 
 
@@ -84,7 +88,6 @@ public:
 	}
 
     void set_data(GLenum gl_type, void* data, GLenum format, size_t width, size_t height = 0, size_t depth = 0);
-
 
 private:
     static GLenum texture_type(unsigned char dims) {

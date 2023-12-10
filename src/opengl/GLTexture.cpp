@@ -1,5 +1,7 @@
 #include "GLTexture.hpp"
 
+#include <iostream>
+
 // AbstractGLTexture
 
 AbstractGLTexture::AbstractGLTexture(GLenum texture_type) : m_texture_type(texture_type) {
@@ -18,6 +20,11 @@ void AbstractGLTexture::bind() const {
 void AbstractGLTexture::unbind() const {
     glBindTexture(m_texture_type, 0);
 }
+
+unsigned int AbstractGLTexture::get_id() const {
+    return m_id;
+}
+
 
 void AbstractGLTexture::set_slot(uint8_t slot) {
     int max_slots;
@@ -79,6 +86,28 @@ void AbstractGLTexture::generate_mipmap(bool enable) {
         bind();
         glGenerateMipmap(m_texture_type);
     }
+}
+
+void AbstractGLTexture::resize(size_t width, size_t height, size_t depth) const {
+    bind();
+    GLenum format, type;
+    switch (m_internal_format) {
+    case GL_DEPTH24_STENCIL8:
+        format = GL_DEPTH_STENCIL;
+        type = GL_UNSIGNED_INT_24_8;
+        break;
+    // case GL_DEPTH32F_STENCIL8: // TODO:
+    default:
+        format = GL_RED;
+        type = GL_UNSIGNED_BYTE;
+    }
+
+    if (height == 0)
+        glTexImage1D(GL_TEXTURE_1D, 0, m_internal_format, width, 0, format, type, nullptr);
+    else if (depth == 0)
+        glTexImage2D(GL_TEXTURE_2D, 0, m_internal_format, width, height, 0, format, type, nullptr);
+    else
+        glTexImage3D(GL_TEXTURE_3D, 0, m_internal_format, width, height, depth, 0, format, type, nullptr);
 }
 
 // GLTexture

@@ -16,10 +16,16 @@
 #include "opengl/Window.hpp"
 
 #include "opengl/GLTexture.hpp"
+#include "opengl/GLFramebuffer.hpp"
 
 // TODO: 
 // Move definitions to cpp file
 
+void maybe_print_error() {
+    auto error = glGetError();
+    if (error != GL_NO_ERROR)
+        std::cout << "ERROR!" << std::endl;
+}
 
 class Scene3D : public AbstractScene {
 private:
@@ -29,6 +35,11 @@ private:
     std::unique_ptr<SkyBox> skybox = nullptr;
     MeshRenderer m_mesh_renderer;
     VoxelRenderer m_voxel_renderer;
+
+    // TODO: move into new structure/class
+    std::unique_ptr<GLFramebuffer> m_framebuffer = nullptr;
+    std::unique_ptr<GLShader> m_to_screen = nullptr;
+    std::unique_ptr<GLVertexArray> m_screen_quad = nullptr;
 
 public:
 
@@ -68,6 +79,31 @@ public:
             "../assets/skybox/front.jpg",
             "../assets/skybox/back.jpg",
         }));
+
+        // framebuffer test
+        m_framebuffer = std::make_unique<GLFramebuffer>();
+        m_framebuffer->attach_color_texture(GLFramebuffer::RGBA);
+        m_framebuffer->attach_depth_texture();
+        std::cout << m_framebuffer->verify() << std::endl;
+        m_framebuffer->unbind();
+
+        // copy framebuffer to screen
+        m_to_screen = std::make_unique<GLShader>();
+        m_to_screen->add_source("../assets/shaders/full_screen.vert");
+        m_to_screen->add_source("../assets/shaders/full_screen.frag");
+        m_to_screen->compile();
+
+        m_screen_quad = std::make_unique<GLVertexArray>();
+        float vertices[] = {
+            -1.0f, -1.0f,
+            -1.0f,  1.0f,
+             1.0f, -1.0f,
+             1.0f,  1.0f,
+        };
+        auto layout = GLBufferLayout({GLBufferElement("Position", GLType::Float2)});
+        std::shared_ptr<GLVertexBuffer> buffer = std::make_shared<GLVertexBuffer>(vertices, sizeof(vertices));
+        buffer->set_layout(layout);
+        m_screen_quad->push(buffer);
     }
 
     void on_event(AbstractEvent& event) {
@@ -98,6 +134,9 @@ public:
     }
 
     void render() {
+        m_framebuffer->bind();
+        // glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_id);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -122,6 +161,20 @@ public:
         }
 
         skybox->render(m_camera.m_view, m_camera.m_projection);
+
+        // copy to screen
+        m_framebuffer->unbind();
+
+        glClearColor(0.1f, 0.8f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
+
+        m_to_screen->bind();
+        m_screen_quad->bind();
+        auto& tex = m_framebuffer->get(0);
+        tex.bind();
+        m_to_screen->set_uniform("tex", 0);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
 private:

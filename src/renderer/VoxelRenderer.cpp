@@ -32,10 +32,10 @@ void VoxelRenderer::init() {
 
     // Shader
     render_data.shader = std::make_shared<GLShader>();
-    render_data.shader->add_source("../assets/shaders/voxel.vert");
-    render_data.shader->add_source("../assets/shaders/voxel.geom");
-    render_data.shader->add_source("../assets/shaders/lighting.frag");
-    render_data.shader->add_source("../assets/shaders/voxel.frag");
+    render_data.shader->add_source("../assets/shaders/3D/voxel.vert");
+    render_data.shader->add_source("../assets/shaders/3D/voxel.geom");
+    render_data.shader->add_source("../assets/shaders/3D/lighting.frag");
+    render_data.shader->add_source("../assets/shaders/3D/voxel.frag");
     render_data.shader->compile();
 
     // lut for uv indices

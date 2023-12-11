@@ -16,9 +16,9 @@ void Renderer2D::init() {
     m_data.circle_vertex_array->push(m_data.circle_vertex_buffer);
 
     m_data.circle_shader = std::make_shared<GLShader>();
-    m_data.circle_shader->add_source("../assets/shaders/circle.vert");
-    m_data.circle_shader->add_source("../assets/shaders/circle.geom");
-    m_data.circle_shader->add_source("../assets/shaders/circle.frag");
+    m_data.circle_shader->add_source("../assets/shaders/2D/circle.vert");
+    m_data.circle_shader->add_source("../assets/shaders/2D/circle.geom");
+    m_data.circle_shader->add_source("../assets/shaders/2D/circle.frag");
     m_data.circle_shader->compile();
 
     m_data.circle_buffer = new CircleData[m_data.max_vertices];
@@ -39,9 +39,9 @@ void Renderer2D::init() {
     
     // m_data_quad_shader = GLShader({"../shaders/quad.vert", "../shaders/quad.frag"});
     m_data.quad_shader = std::make_shared<GLShader>();
-    m_data.quad_shader->add_source("../assets/shaders/quad.vert");
-    m_data.quad_shader->add_source("../assets/shaders/quad.geom");
-    m_data.quad_shader->add_source("../assets/shaders/quad.frag");
+    m_data.quad_shader->add_source("../assets/shaders/2D/quad.vert");
+    m_data.quad_shader->add_source("../assets/shaders/2D/quad.geom");
+    m_data.quad_shader->add_source("../assets/shaders/2D/quad.frag");
     m_data.quad_shader->compile();
 
     m_data.quad_buffer = new QuadVertex[m_data.max_vertices];

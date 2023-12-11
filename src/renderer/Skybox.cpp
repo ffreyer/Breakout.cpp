@@ -63,8 +63,8 @@ SkyBox::SkyBox(std::array<std::string, 6> filepaths) {
     va.push(buffer);
 
     // Generate shader
-    shader.add_source("../assets/shaders/skybox.vert");
-    shader.add_source("../assets/shaders/skybox.frag");
+    shader.add_source("../assets/shaders/3D/skybox.vert");
+    shader.add_source("../assets/shaders/3D/skybox.frag");
     shader.compile();
 }
 

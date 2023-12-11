@@ -35,9 +35,9 @@ namespace Component {
 
 void MeshRenderer::init() {
     m_shader = std::make_shared<GLShader>();
-    m_shader->add_source("../assets/shaders/triangle.vert");
-    m_shader->add_source("../assets/shaders/lighting.frag");
-    m_shader->add_source("../assets/shaders/triangle.frag");
+    m_shader->add_source("../assets/shaders/3D/triangle.vert");
+    m_shader->add_source("../assets/shaders/3D/lighting.frag");
+    m_shader->add_source("../assets/shaders/3D/triangle.frag");
     m_shader->compile();
 }
 

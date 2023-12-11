@@ -29,7 +29,7 @@ namespace Component {
 
         SimpleTexture2D(const char* filepath);
 
-        void bind(GLShader& shader, unsigned int slot) const;
+        void bind(GLShader& shader, unsigned int slot);
         void bind() const { texture.bind(); }
         void unbind() const { texture.unbind(); }
     };
@@ -39,10 +39,12 @@ namespace Component {
 class MeshRenderer {
 private:
     std::shared_ptr<GLShader> m_shader = nullptr;
+    std::shared_ptr<GLShader> m_shadow_shader = nullptr;
 
 public:
     MeshRenderer() = default;
     void init();
+    GLShader& get_shader() { return *m_shader; }
 
     // add cube components to existing entity
     void add_cube_mesh(Entity& cube) const;
@@ -51,4 +53,7 @@ public:
     void begin(glm::mat4& projectionview) const;
     void draw_mesh(Entity e) const;
     void end() const;
+
+    void begin_shadow(glm::mat4& projectionview) const;
+    void draw_shadow_mesh(Entity e) const;
 };

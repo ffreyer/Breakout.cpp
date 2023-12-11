@@ -26,7 +26,7 @@ unsigned int AbstractGLTexture::get_id() const {
 }
 
 
-void AbstractGLTexture::set_slot(uint8_t slot) {
+void AbstractGLTexture::set_slot(uint32_t slot) {
     int max_slots;
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_slots);
     if (slot < max_slots)
@@ -95,6 +95,10 @@ void AbstractGLTexture::resize(size_t width, size_t height, size_t depth) const 
     case GL_DEPTH24_STENCIL8:
         format = GL_DEPTH_STENCIL;
         type = GL_UNSIGNED_INT_24_8;
+        break;
+    case GL_DEPTH_COMPONENT:
+        format = GL_DEPTH_COMPONENT;
+        type = GL_FLOAT;
         break;
     // case GL_DEPTH32F_STENCIL8: // TODO:
     default:

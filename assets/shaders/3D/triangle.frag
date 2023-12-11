@@ -2,16 +2,16 @@
 
 in vec3 f_normal;
 in vec2 f_uv;
+in vec4 f_shadow_pos;
 
 out vec4 FragColor;
 
-uniform sampler2D texture0;
+uniform sampler2D texture1;
 
-vec3 illuminate(vec3 normal, vec3 color);
+vec3 illuminate(vec4 shadow_pos, vec3 normal, vec3 color);
 
 void main()
 {
-    vec3 color = texture(texture0, f_uv).rgb;
-    FragColor = vec4(illuminate(f_normal, color), 1);
-    // FragColor = vec4(illuminate(f_normal, 0.5 + 0.5 * f_normal), 1);
+    vec3 color = texture(texture1, f_uv).rgb;
+    FragColor = vec4(illuminate(f_shadow_pos, f_normal, color), 1);
 }

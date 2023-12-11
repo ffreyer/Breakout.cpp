@@ -11,6 +11,7 @@
 #include "renderer/Skybox.hpp"
 
 #include "camera/FirstPersonCamera.hpp"
+#include "camera/OrthographicCamera.hpp"
 #include "core/print.hpp"
 #include "core/Events.hpp"
 #include "opengl/Window.hpp"
@@ -40,11 +41,14 @@ private:
     std::unique_ptr<GLFramebuffer> m_framebuffer = nullptr;
     std::unique_ptr<GLShader> m_to_screen = nullptr;
     std::unique_ptr<GLVertexArray> m_screen_quad = nullptr;
+    // Shadow pass
+    OrthographicCamera m_shadow_camera;
+
 
 public:
 
     Scene3D() : 
-        m_camera(FirstPersonCamera())
+        m_camera(FirstPersonCamera()), m_shadow_camera(OrthographicCamera())
     {}
 
     void init(Window* window) {
@@ -56,6 +60,7 @@ public:
         Entity cube = create_entity("Sample Cube");
         m_mesh_renderer.add_cube_mesh(cube);
         cube.add<Component::Transform>();
+        cube.get<Component::Transform>().scale_by(glm::vec3(0.5f));
         cube.add<Component::SimpleTexture2D>("../assets/wood_container.jpg");
 
         // Sample Voxel Chunk
@@ -82,9 +87,12 @@ public:
 
         // framebuffer test
         m_framebuffer = std::make_unique<GLFramebuffer>();
-        m_framebuffer->attach_color_texture(GLFramebuffer::RGBA);
-        m_framebuffer->attach_depth_texture();
-        std::cout << m_framebuffer->verify() << std::endl;
+        m_framebuffer->attach_texture(GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, GL_DEPTH_COMPONENT);
+        AbstractGLTexture& shadowmap = m_framebuffer->get(0);
+        shadowmap.set_min_filter(GLTexture::NEAREST);
+        shadowmap.set_mag_filter(GLTexture::NEAREST);
+        m_framebuffer->resize(1024, 1024);
+        m_framebuffer->disable_color();
         m_framebuffer->unbind();
 
         // copy framebuffer to screen
@@ -104,6 +112,12 @@ public:
         std::shared_ptr<GLVertexBuffer> buffer = std::make_shared<GLVertexBuffer>(vertices, sizeof(vertices));
         buffer->set_layout(layout);
         m_screen_quad->push(buffer);
+
+        // TODO: ortho camera (derive these from perspective camera...)
+        m_shadow_camera.lrbt(-1.0f, 1.0f, -1.0f, 1.0f);
+        m_shadow_camera.near(0.1f);
+        m_shadow_camera.far(10.0f);
+        m_shadow_camera.recalculate_projection();
     }
 
     void on_event(AbstractEvent& event) {
@@ -134,19 +148,60 @@ public:
     }
 
     void render() {
-        m_framebuffer->bind();
-        // glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_id);
+        // TODO: lighting variables
+        glm::vec3 light_direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0));
+        m_camera.recalculate_view();
 
+        // Shadow pass 
+        m_framebuffer->bind();
+        glViewport(0, 0, 1024, 1024);
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        { // Setup matrix
+            m_shadow_camera.viewdirection(light_direction);
+            float view_distance = glm::length(m_camera.eyeposition());
+            m_shadow_camera.eyeposition(-(1 + view_distance) * light_direction);
+            m_shadow_camera.up(glm::vec3(1, 0, 0));
+            m_shadow_camera.recalculate_view();
+        }
+
+        {
+            auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
+            m_mesh_renderer.begin_shadow(m_shadow_camera.m_projectionview);
+            for (entt::entity e : view)
+                m_mesh_renderer.draw_shadow_mesh(Entity(m_registry, e));
+            m_mesh_renderer.end();
+        }
+
+        {
+            auto view = m_registry.view<Component::Chunk, Component::Transform>();
+            m_voxel_renderer.begin_shadow(m_shadow_camera.m_projectionview);
+            for (entt::entity e : view)
+                m_voxel_renderer.render_shadow(Entity(m_registry, e));
+            m_voxel_renderer.end();
+        }
+
+        m_framebuffer->unbind();
+
+        // Main Pass
+        glm::ivec2 window_size = m_window->get_window_size();
+        glViewport(0, 0, window_size.x, window_size.y);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
         m_camera.recalculate_view();
+        auto& tex = m_framebuffer->get(0);
 
         // Render meshes
         {
             auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
             m_mesh_renderer.begin(m_camera.m_projectionview);
+            GLShader& shader = m_mesh_renderer.get_shader();
+            tex.bind();
+            shader.set_uniform("shadowmap", 0);
+            shader.set_uniform("lightspace", m_shadow_camera.m_projectionview);
             for (entt::entity e : view)
                 m_mesh_renderer.draw_mesh(Entity(m_registry, e));
             m_mesh_renderer.end();
@@ -155,6 +210,10 @@ public:
         {
             auto view = m_registry.view<Component::Chunk, Component::Transform>();
             m_voxel_renderer.begin(m_camera.m_projectionview);
+            GLShader& shader = m_voxel_renderer.get_shader();
+            tex.bind();
+            shader.set_uniform("shadowmap", 0);
+            shader.set_uniform("lightspace", m_shadow_camera.m_projectionview);
             for (entt::entity e : view)
                 m_voxel_renderer.render(Entity(m_registry, e));
             m_voxel_renderer.end();
@@ -163,18 +222,20 @@ public:
         skybox->render(m_camera.m_view, m_camera.m_projection);
 
         // copy to screen
-        m_framebuffer->unbind();
+        // m_framebuffer->unbind();
 
-        glClearColor(0.1f, 0.8f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDisable(GL_DEPTH_TEST);
+        // glClearColor(0.1f, 0.8f, 0.1f, 1.0f);
+        // glClear(GL_COLOR_BUFFER_BIT);
+        // glDisable(GL_DEPTH_TEST);
 
-        m_to_screen->bind();
-        m_screen_quad->bind();
-        auto& tex = m_framebuffer->get(0);
-        tex.bind();
-        m_to_screen->set_uniform("tex", 0);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        // {
+        //     m_to_screen->bind();
+        //     m_screen_quad->bind();
+        //     auto& tex = m_framebuffer->get(0);
+        //     tex.bind();
+        //     m_to_screen->set_uniform("tex", 0);
+        //     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        // }
     }
 
 private:

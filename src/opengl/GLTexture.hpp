@@ -49,7 +49,7 @@ public:
     virtual void unbind() const;
     unsigned int get_id() const;
 
-    void set_slot(uint8_t slot);
+    void set_slot(uint32_t slot);
     void set_min_filter(GLenum mode) const; // combined filter type
     void set_min_filter(GLenum main, GLenum mipmap) const; // separate filter types
     void set_mag_filter(GLenum mode) const;

@@ -6,16 +6,18 @@ layout (location = 2) in vec2 v_uv;
 
 flat out vec3 f_normal;
 out vec2 f_uv;
+out vec4 f_shadow_pos;
 
 uniform mat4 model;
 uniform mat4 projectionview;
 uniform mat3 normalmatrix;
-// uniform mat4 projection;
-// uniform mat4 view;
+uniform mat4 lightspace;
 
 void main()
 {
-    gl_Position = projectionview * model * vec4(v_pos, 1.0);
+    vec4 world_pos = model * vec4(v_pos, 1.0);
+    gl_Position = projectionview * world_pos;
+    f_shadow_pos = lightspace * world_pos;
     f_normal = normalmatrix * v_normal;
     f_uv = v_uv;
 }

@@ -42,6 +42,7 @@ private:
     struct {
         std::shared_ptr<GLVertexArray> va = nullptr;
         std::shared_ptr<GLShader> shader = nullptr;
+        std::shared_ptr<GLShader> shadow_shader = nullptr;
         std::shared_ptr<GLTexture> block_id = nullptr;
         std::shared_ptr<GLBuffer> uv_idx_map = nullptr; 
         std::shared_ptr<RegularTextureAtlas> texture_map = nullptr;
@@ -52,8 +53,12 @@ public:
     ~VoxelRenderer() {}
 
     void init();
+    GLShader& get_shader() { return *render_data.shader; }
 
     void begin(glm::mat4& projectionview) const;
     void render(Entity e) const; 
     void end() const;
+
+    void begin_shadow(glm::mat4& projectionview) const;
+    void render_shadow(Entity e) const; 
 };

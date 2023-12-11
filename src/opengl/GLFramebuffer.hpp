@@ -75,6 +75,12 @@ public:
             throw std::invalid_argument("Framebuffer error occured!");
     }
 
+    void disable_color() {
+        bind();
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+    }
+
     AbstractGLTexture& get(uint8_t index) {
         return m_textures[index];
     }

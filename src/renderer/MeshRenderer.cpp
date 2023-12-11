@@ -24,11 +24,11 @@ namespace Component {
         stbi_image_free(image);
     };
 
-    void SimpleTexture2D::bind(GLShader& shader, unsigned int slot) const {
+    void SimpleTexture2D::bind(GLShader& shader, unsigned int slot) {
         char name[10];
         sprintf_s(name, 10, "texture%u", slot);
         shader.set_uniform(name, (int) slot);
-        glActiveTexture(GL_TEXTURE0 + slot);
+        texture.set_slot(slot);
         texture.bind();
     }
 }
@@ -39,6 +39,11 @@ void MeshRenderer::init() {
     m_shader->add_source("../assets/shaders/3D/lighting.frag");
     m_shader->add_source("../assets/shaders/3D/triangle.frag");
     m_shader->compile();
+
+    m_shadow_shader = std::make_shared<GLShader>();
+    m_shadow_shader->add_source("../assets/shaders/3D/triangle.vert");
+    m_shadow_shader->add_source("../assets/shaders/3D/shadow.frag");
+    m_shadow_shader->compile();
 }
 
 void MeshRenderer::add_cube_mesh(Entity& cube) const {
@@ -112,11 +117,24 @@ void MeshRenderer::draw_mesh(Entity e) const {
     auto& transform = e.get<Component::Transform>();
     m_shader->set_uniform("model", transform.get_matrix());
     m_shader->set_uniform("normalmatrix", transform.get_normalmatrix());
-    texture.bind(*m_shader, 0);
+    texture.bind(*m_shader, 1);
     mesh.bind();
     glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
 }
 
 void MeshRenderer::end() const {
     GLVertexArray::unbind();
+}
+
+void MeshRenderer::begin_shadow(glm::mat4 &projectionview) const {
+    m_shadow_shader->bind();
+    m_shadow_shader->set_uniform("projectionview", projectionview);
+}
+
+void MeshRenderer::draw_shadow_mesh(Entity e) const {
+    auto& mesh = e.get<Component::SimpleMesh>();
+    auto& transform = e.get<Component::Transform>();
+    m_shadow_shader->set_uniform("model", transform.get_matrix());
+    mesh.bind();
+    glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
 }

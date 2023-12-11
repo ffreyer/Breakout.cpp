@@ -5,7 +5,7 @@
 #include "AbstractScene.hpp"
 #include "callbacks.hpp"
 #include "renderer/Renderer2D.hpp"
-#include "camera/OrthographicCamera.hpp"
+#include "camera/Camera2D.hpp"
 
 // TODO: 
 // Move definitions to cpp file
@@ -41,14 +41,14 @@ private:
     };
 
     Renderer2D m_renderer;
-    OrthographicCamera m_camera;
+    Camera2D m_camera;
     ScreenShake m_shake;
 
 public:
 
     Scene2D() : 
         m_renderer(Renderer2D()), 
-        m_camera(OrthographicCamera(-1.0f, 1.0f, -1.0f, 1.0f))
+        m_camera(Camera2D(-1.0f, 1.0f, -1.0f, 1.0f))
     {}
 
     void init() {

@@ -13,7 +13,6 @@ AbstractGLTexture::~AbstractGLTexture() {
 };
 
 void AbstractGLTexture::bind() const {
-    glActiveTexture(m_slot);
     glBindTexture(m_texture_type, m_id);
 }
 
@@ -23,17 +22,6 @@ void AbstractGLTexture::unbind() const {
 
 unsigned int AbstractGLTexture::get_id() const {
     return m_id;
-}
-
-
-void AbstractGLTexture::set_slot(uint32_t slot) {
-    int max_slots;
-    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_slots);
-    if (slot < max_slots)
-        // TODO: maybe do this with a lookup table instead for safety?
-        m_slot = GL_TEXTURE0 + slot;
-    else
-        throw std::invalid_argument("Invalid texture slot.");
 }
 
 // Settings

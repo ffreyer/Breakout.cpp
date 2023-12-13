@@ -41,7 +41,6 @@ void VoxelRenderer::init() {
     render_data.block_id->set_min_filter(GLTexture::NEAREST);
     render_data.block_id->set_mag_filter(GLTexture::NEAREST);
     render_data.block_id->set_internal_format(GLTexture::R8UI);
-    render_data.block_id->set_slot(1);
 
     // Shader
     render_data.shader = std::make_shared<GLShader>();
@@ -72,24 +71,21 @@ void VoxelRenderer::init() {
     render_data.texture_map->set_mag_filter(GLTexture::NEAREST);
     render_data.texture_map->load("../assets/texture_map.png");
     render_data.texture_map->set_element_pixel_size(16, 16);
-    render_data.texture_map->set_slot(2);
 }
 
 void VoxelRenderer::begin(glm::mat4& projectionview) const {
     render_data.shader->bind();
     render_data.va->bind();
 
-    render_data.shader->set_uniform("block_id", 1);
-    render_data.block_id->bind();
+    render_data.shader->set_uniform("block_id", *render_data.block_id);
 
     render_data.uv_idx_map->bind();
     render_data.shader->set_uniform_block("uv_lut_block", 0);
     render_data.uv_idx_map->bind_buffer_base(0);
 
-    render_data.shader->set_uniform("texture_map", 2);
+    render_data.shader->set_uniform("texture_map", *render_data.texture_map);
     render_data.shader->set_uniform("tex_uv_size", render_data.texture_map->get_uv_size());
     render_data.shader->set_uniform("tex_index_size", render_data.texture_map->get_index_size());
-    render_data.texture_map->bind();
 
     render_data.shader->set_uniform("projectionview", projectionview);
     // TODO:
@@ -115,8 +111,7 @@ void VoxelRenderer::end() const {
 void VoxelRenderer::begin_shadow(glm::mat4 &projectionview) const {
     render_data.shadow_shader->bind();
     render_data.va->bind();
-    render_data.shadow_shader->set_uniform("block_id", 0);
-    render_data.block_id->bind();
+    render_data.shadow_shader->set_uniform("block_id", *render_data.block_id);
     render_data.shadow_shader->set_uniform("projectionview", projectionview);
 }
 

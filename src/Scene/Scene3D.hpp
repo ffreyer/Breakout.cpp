@@ -199,8 +199,7 @@ public:
             auto view = m_registry.view<Component::SimpleMesh, Component::SimpleTexture2D, Component::Transform>();
             m_mesh_renderer.begin(m_camera.m_projectionview);
             GLShader& shader = m_mesh_renderer.get_shader();
-            tex.bind();
-            shader.set_uniform("shadowmap", 0);
+            shader.set_uniform("shadowmap", tex);
             shader.set_uniform("lightspace", m_shadow_camera.m_projectionview);
             for (entt::entity e : view)
                 m_mesh_renderer.draw_mesh(Entity(m_registry, e));
@@ -211,8 +210,7 @@ public:
             auto view = m_registry.view<Component::Chunk, Component::Transform>();
             m_voxel_renderer.begin(m_camera.m_projectionview);
             GLShader& shader = m_voxel_renderer.get_shader();
-            tex.bind();
-            shader.set_uniform("shadowmap", 0);
+            shader.set_uniform("shadowmap", tex);
             shader.set_uniform("lightspace", m_shadow_camera.m_projectionview);
             for (entt::entity e : view)
                 m_voxel_renderer.render(Entity(m_registry, e));

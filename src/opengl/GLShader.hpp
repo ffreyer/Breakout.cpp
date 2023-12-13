@@ -8,25 +8,24 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 
-// TODO:
-// - move file reading code to function
-// - file ending -> shader type
-// - add method for adding sources, make constructor not load stuff
-// - compile method
-// - function/constructor for quick construction
-// - consider multiple dispatch for set uniform? and templates?
+#include "GLTexture.hpp"
 
-class GLShader
-{
+class GLShader {
 private:
-    unsigned int m_id = 0;
+    uint32_t m_id = 0;
 
     std::vector<const char*> m_vertex_shader_filepaths;
     std::vector<const char*> m_geometry_shader_filepaths;
     std::vector<const char*> m_fragment_shader_filepaths;
+
+    // For texture management
+    int8_t m_texture_slot = 0; 
+    int32_t m_max_slots;
+    std::unordered_map<std::string, int8_t> m_name_to_slot;
 
 public:
     GLShader() : 
@@ -34,6 +33,7 @@ public:
         m_geometry_shader_filepaths(std::vector<const char*>()),
         m_fragment_shader_filepaths(std::vector<const char*>())
     { 
+        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &m_max_slots);
     }
 
     GLShader(std::initializer_list<const char*> paths);
@@ -42,8 +42,8 @@ public:
     bool add_source(const char* filepath);
     bool compile();
 
-    void use() const { glUseProgram(m_id); };
-    void bind() const { glUseProgram(m_id); };
+    void use() { bind(); };
+    void bind();
 
     void set_uniform(const std::string &name, bool v1) const;
     void set_uniform(const std::string &name, bool v1, bool v2) const;
@@ -72,7 +72,11 @@ public:
     void set_uniform(const std::string &name, glm::ivec3 vec) const;
     void set_uniform(const std::string &name, glm::ivec4 vec) const;
 
+    void set_uniform(const std::string &name, AbstractGLTexture& texture);
+    void set_uniform(const std::string &name, AbstractGLTexture* texture) { set_uniform(name, *texture); }
+
     void set_uniform_block(const std::string &name, int trg) const;
+
 
 private:
     unsigned int generate_shader(const char *shader_source, unsigned int type) const;

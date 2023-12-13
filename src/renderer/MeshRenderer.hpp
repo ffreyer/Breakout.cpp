@@ -17,10 +17,6 @@ namespace Component {
 
         // TODO: check if move is the correct tool here
         SimpleMesh(std::vector<uint32_t>& idxs, std::vector<float>& data, GLBufferLayout& layout);
-
-        void bind() const { va.bind(); }
-        void unbind() const { va.unbind(); }
-        uint32_t size() const { return va.index_count(); }
     };
 
     struct SimpleTexture2D {
@@ -28,10 +24,6 @@ namespace Component {
         GLTexture texture;
 
         SimpleTexture2D(const char* filepath);
-
-        void bind(GLShader& shader, unsigned int slot);
-        void bind() const { texture.bind(); }
-        void unbind() const { texture.unbind(); }
     };
 }
 

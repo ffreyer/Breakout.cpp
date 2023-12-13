@@ -23,14 +23,6 @@ namespace Component {
         texture.set_data(image, format, width, height);
         stbi_image_free(image);
     };
-
-    void SimpleTexture2D::bind(GLShader& shader, unsigned int slot) {
-        char name[10];
-        sprintf_s(name, 10, "texture%u", slot);
-        shader.set_uniform(name, (int) slot);
-        texture.set_slot(slot);
-        texture.bind();
-    }
 }
 
 void MeshRenderer::init() {
@@ -117,9 +109,9 @@ void MeshRenderer::draw_mesh(Entity e) const {
     auto& transform = e.get<Component::Transform>();
     m_shader->set_uniform("model", transform.get_matrix());
     m_shader->set_uniform("normalmatrix", transform.get_normalmatrix());
-    texture.bind(*m_shader, 1);
-    mesh.bind();
-    glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
+    m_shader->set_uniform("image", texture.texture);
+    mesh.va.bind();
+    glDrawElements(GL_TRIANGLES, mesh.va.index_count(), GL_UNSIGNED_INT, 0);
 }
 
 void MeshRenderer::end() const {
@@ -135,6 +127,6 @@ void MeshRenderer::draw_shadow_mesh(Entity e) const {
     auto& mesh = e.get<Component::SimpleMesh>();
     auto& transform = e.get<Component::Transform>();
     m_shadow_shader->set_uniform("model", transform.get_matrix());
-    mesh.bind();
-    glDrawElements(GL_TRIANGLES, mesh.size(), GL_UNSIGNED_INT, 0);
+    mesh.va.bind();
+    glDrawElements(GL_TRIANGLES, mesh.va.index_count(), GL_UNSIGNED_INT, 0);
 }

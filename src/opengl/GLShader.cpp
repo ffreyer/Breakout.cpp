@@ -9,7 +9,9 @@
 std::string file_to_string(const char* filepath);
 
 // Class Functions
-GLShader::GLShader(std::initializer_list<const char*> paths) {
+GLShader::GLShader(std::initializer_list<const char*> paths) 
+    : GLShader()
+{
     for (const char* path : paths)
         add_source(path);
     compile();
@@ -88,6 +90,12 @@ unsigned int GLShader::get_block_index(const std::string &name) const {
     return id;
 }
 
+void GLShader::bind() {
+    glUseProgram(m_id);
+    m_name_to_slot.clear();
+    m_texture_slot = 0;
+}
+
 void GLShader::set_uniform(const std::string &name, bool v1) const {
     glUniform1i(get_uniform_location(name), v1);
 }
@@ -156,6 +164,24 @@ void GLShader::set_uniform(const std::string &name, glm::ivec3 vec) const {
 }
 void GLShader::set_uniform(const std::string &name, glm::ivec4 vec) const {
     glUniform4iv(get_uniform_location(name), 1, glm::value_ptr(vec));
+}
+
+void GLShader::set_uniform(const std::string &name, AbstractGLTexture &texture) {
+    int8_t slot;
+    if (m_name_to_slot.find(name) != m_name_to_slot.end()) {
+        // if the name already has a slot we use that slot
+        slot = m_name_to_slot[name];
+    } else {
+        // if the name is not known we allocate a new slot
+        slot = m_texture_slot++;
+        m_name_to_slot[name] = slot;
+
+        if (slot > m_max_slots) // TODO: improve error type
+            throw std::invalid_argument("No more texture slots available!");
+    }
+    glActiveTexture(GL_TEXTURE0 + slot);
+    texture.bind();
+    set_uniform(name, slot);
 }
 
 void GLShader::set_uniform_block(const std::string &name, int trg) const {

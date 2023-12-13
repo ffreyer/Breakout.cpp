@@ -15,7 +15,6 @@ class AbstractGLTexture {
 protected:
     const GLenum m_texture_type;
     unsigned int m_id = 0;
-    GLenum m_slot = GL_TEXTURE0;
     bool m_mipmapped = false;
     GLenum m_internal_format = GL_RGBA;
 
@@ -49,7 +48,6 @@ public:
     virtual void unbind() const;
     unsigned int get_id() const;
 
-    void set_slot(uint32_t slot);
     void set_min_filter(GLenum mode) const; // combined filter type
     void set_min_filter(GLenum main, GLenum mipmap) const; // separate filter types
     void set_mag_filter(GLenum mode) const;

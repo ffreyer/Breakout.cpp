@@ -72,7 +72,7 @@ void SkyBox::render(glm::mat4& view, glm::mat4& projection){
     glDepthFunc(GL_LEQUAL); 
     shader.bind();
     va.bind();
-    cubemap.bind();
+    cubemap.bind(); // TODO: maybe switch to using shader.set_uniform(name, cubemap)
     shader.set_uniform("view", glm::mat4(glm::mat3(view)));
     shader.set_uniform("projection", projection);
     glDrawArrays(GL_TRIANGLES, 0, 36);

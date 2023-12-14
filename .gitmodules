@@ -1,9 +1,3 @@
-[submodule "dependencies/glm"]
-	path = dependencies/glm
-	url = https://github.com/g-truc/glm
-[submodule "dependencies/entt"]
-	path = dependencies/entt
-	url = https://github.com/skypjack/entt
 [submodule "dependencies/glfw"]
 	path = dependencies/glfw
 	url = https://github.com/glfw/glfw

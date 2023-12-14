@@ -3,6 +3,9 @@
 Application::Application() {};
 
 Application::~Application() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     delete m_window;
 }
 
@@ -14,6 +17,19 @@ bool Application::init(const char* name, int width, int height) {
     m_window = new Window(name, width, height);
     if (m_window->init()) {
         m_window->connect_events(this);
+
+        // imgui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        // Setup Platform/Renderer backends
+        ImGui_ImplGlfw_InitForOpenGL(m_window->m_window, true);
+        ImGui_ImplOpenGL3_Init();
+
         return true;
     }
         
@@ -42,7 +58,16 @@ void Application::run() {
         delta_time = (float)(glfwGetTime() - last_time);
         last_time = glfwGetTime();
 
+        // imgui
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+
         update(delta_time);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         m_window->swap_buffers();
 

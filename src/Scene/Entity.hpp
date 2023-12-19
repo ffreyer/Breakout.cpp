@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "Components.hpp"
-#include "../core/logging.hpp"
+#include "core/logging.hpp"
 
 class Entity {
 private:

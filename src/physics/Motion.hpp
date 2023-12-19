@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Scene/Components.hpp"
+#include "Scene/Components.hpp"
 
 namespace Component {
     // This enables movement simulation

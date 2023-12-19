@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "../opengl/GLTexture.hpp"
-#include "../opengl/GLTexture.hpp"
-#include "../opengl/GLVertexArray.hpp"
-#include "../opengl/GLShader.hpp"
+#include "opengl/GLTexture.hpp"
+#include "opengl/GLTexture.hpp"
+#include "opengl/GLVertexArray.hpp"
+#include "opengl/GLShader.hpp"
 
-#include "../Scene/Entity.hpp"
+#include "Scene/Entity.hpp"
 
 namespace Component {
     struct SimpleMesh {

@@ -91,10 +91,3 @@ void Window::set_size(int width, int height) {
     activate(); // for savety
     glfwSetWindowSize(m_window, width, height);
 }
-
-
-// TODO:
-// create better event system
-
-
-

@@ -72,7 +72,7 @@ public:
 
 // Resolving Collisions
 
-    static void resolve_reflection(Entity a, Entity b) {
+    static const void resolve_reflection(Entity a, Entity b) {
 
         auto [a_transform, a_bbox, a_motion] = a.get<Component::Transform, Component::Boundingbox2D, Component::Motion>();
         glm::vec4 a_lrbt = a_bbox.get_lrbt(a_transform);

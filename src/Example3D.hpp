@@ -7,7 +7,6 @@
 
 #include "Scene/Scene3D.hpp"
 #include "core/Application.hpp"
-#include "core/print.hpp"
 #include "core/logging.hpp"
 
 class Example3D : public Application {

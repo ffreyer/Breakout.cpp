@@ -4,7 +4,8 @@
             "type": "shell",
             "label": "Build Main",
             "windows": {
-                "command": "${workspaceFolder}/build.bat",
+                // "command": "${workspaceFolder}/manual_build.bat",
+                "command": "${workspaceFolder}/build_all.bat",
             },
             "linux": {
                 "command": "${workspaceFolder}/build.sh",

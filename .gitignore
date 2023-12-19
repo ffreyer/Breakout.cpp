@@ -43,5 +43,6 @@ dependencies/lib
 TODO.md
 trash
 
-# binaries
+# binaries & build files
 bin
+build

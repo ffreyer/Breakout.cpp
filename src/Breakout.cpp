@@ -50,7 +50,7 @@ void Breakout::on_event(AbstractEvent& event) {
 
 void Breakout::create_ball(glm::vec2 pos, glm::vec2 vel) {
     Entity ball = m_scene.create_circle("Ball", glm::vec3(pos, 0), 0.02f);
-    ball.add<Component::Boundingbox2D>(glm::vec2(0.0f), 1.0f, Physics2D::resolve_reflection);
+    ball.add<Component::Boundingbox2D>(glm::vec2(0.0f), 1.0f, (Callback::Function2) Physics2D::resolve_reflection);
     ball.add<Component::Motion>(vel);
     ball.add<Component::OnUpdate>([this](Entity e){ 
         auto pos = e.get<Component::Transform>().position;

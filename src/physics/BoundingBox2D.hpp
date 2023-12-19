@@ -1,8 +1,11 @@
 #pragma once
 
-#include "../Scene/Components.hpp"
-#include "../Scene/callbacks.hpp"
-#include "../core/print.hpp"
+#include "Scene/Components.hpp"
+#include "Scene/callbacks.hpp"
+
+#include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtx/io.hpp>
 
 namespace Component {
     struct Boundingbox2D {
@@ -50,7 +53,9 @@ namespace Component {
                     stream << "BoundingBox(" << bb.left << ".." << bb.right << 
                         ", " << bb.bottom << ".." << bb.top << ")";
                 else
-                    stream << "BoundingCircle(" << bb.origin << ", " << bb.radius << ")";
+                    stream << "BoundingCircle(";
+                    stream << bb.origin;
+                    stream << ", " << bb.radius << ")";
                 return stream;
             }
         };

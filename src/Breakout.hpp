@@ -5,11 +5,11 @@
 #include <cstdlib>
 
 #include <glm/glm.hpp>
+#include <glm/gtx/io.hpp>
 
 #include "Scene/Scene2D.hpp"
 #include "physics/Physics.hpp"
 #include "core/Application.hpp"
-#include "core/print.hpp"
 #include "core/logging.hpp"
 
 namespace Component {

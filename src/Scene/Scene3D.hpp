@@ -3,6 +3,8 @@
 #include <vector>
 #include <array>
 
+#include <glm/gtx/io.hpp>
+
 #include "AbstractScene.hpp"
 #include "callbacks.hpp"
 
@@ -12,7 +14,6 @@
 
 #include "camera/FirstPersonCamera.hpp"
 #include "camera/OrthographicCamera.hpp"
-#include "core/print.hpp"
 #include "core/Events.hpp"
 #include "opengl/Window.hpp"
 
@@ -190,6 +191,7 @@ public:
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+        // glEnable(GL_MULTISAMPLE);
 
         m_camera.recalculate_view();
         auto& tex = m_framebuffer->get(0);

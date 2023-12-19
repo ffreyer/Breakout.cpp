@@ -5,9 +5,9 @@
 #include <utility>
 
 #include <glm/glm.hpp> 
+#include <glm/gtx/io.hpp>
 
 #include "EventEnums.hpp"
-#include "print.hpp"
 
 struct AbstractEvent {
     EventType type;

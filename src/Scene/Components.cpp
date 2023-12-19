@@ -1,5 +1,5 @@
 #include "Components.hpp"
-#include "../core/print.hpp"
+#include <glm/gtx/io.hpp>
 
 std::ostream& operator<<(std::ostream& stream, Component::Name& comp) {
     stream << "Name(" << comp.name << ")";

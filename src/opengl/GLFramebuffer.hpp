@@ -51,7 +51,7 @@ public:
     }
 
     void attach_color_texture(GLenum internal_format = GL_RGB) {
-        attach_texture(GL_COLOR_ATTACHMENT0 + m_counter, GL_TEXTURE_2D, internal_format);
+        attach_texture(GL_COLOR_ATTACHMENT0 + (GLenum) m_counter, GL_TEXTURE_2D, internal_format);
         m_counter++;
     }
     void attach_depth_texture() {

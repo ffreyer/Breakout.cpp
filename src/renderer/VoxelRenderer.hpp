@@ -26,7 +26,7 @@ namespace Component {
             for (int z = 0; z < LENGTH; z++) {
                 for (int y = 0; y < LENGTH; y++) {
                     for (int x = 0; x < LENGTH; x++) {
-                        float cx = abs(x-7.5), cy = abs(y-7.5), cz = abs(z-7.5);
+                        float cx = abs(x - 7.5f), cy = abs(y - 7.5f), cz = abs(z - 7.5f);
                         data[LENGTH * (LENGTH * z + y) + x] = 
                            (cx * cy > 3) * (cx * cz > 3) * (cy * cz > 3) * (y < 9) * (x + 16 * z);
                     }

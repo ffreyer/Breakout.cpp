@@ -19,7 +19,7 @@ bool Window::init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create Window
-    m_window = glfwCreateWindow(m_window_size.x, m_window_size.y, m_name.c_str(), NULL, NULL);
+    m_window = glfwCreateWindow((int) m_window_size.x, (int) m_window_size.y, m_name.c_str(), NULL, NULL);
     if (m_window == nullptr) {
         std::cout << "Failed to create GLFW window!" << std::endl;
         glfwTerminate();
@@ -38,7 +38,7 @@ bool Window::init() {
     }
 
     // set initial viewport
-    glViewport(0, 0, m_window_size.x, m_window_size.y);
+    glViewport(0, 0, (int) m_window_size.x, (int) m_window_size.y);
     // update on resize
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 

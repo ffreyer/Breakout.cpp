@@ -12,7 +12,7 @@ protected:
 	unsigned int m_id = 0;
 	GLenum m_buffer_type;
 	GLenum m_mode;
-	size_t m_size;
+	uint32_t m_size;
 
 public:
 	enum : GLenum {

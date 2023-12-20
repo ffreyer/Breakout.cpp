@@ -47,8 +47,8 @@ ECHO "Files:" !cFilenames!
 SET assembly=main
 SET compilerFlags=-g -Wall
 :: Werror - this causes errors for included c files
-SET includeFlags=-Isrc -Idependencies/entt/src -Idependencies/glad/include -Idependencies/glfw/include -Idependencies/glm -Idependencies/imgui
-SET linkerDirs=-Ldependencies/glfw/build
+SET includeFlags=-Isrc -Idependencies/entt/src -Idependencies/glad/include -Idependencies/glfw/include -Idependencies/glm -Idependencies/imgui -Idependencies/stb
+SET linkerDirs=-Ldependencies/glfw/build/src/Debug
 SET linkerFlags=-lglfw3dll -lopengl32 
 REM SET defines=
 

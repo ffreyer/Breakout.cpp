@@ -53,9 +53,7 @@ namespace Component {
                     stream << "BoundingBox(" << bb.left << ".." << bb.right << 
                         ", " << bb.bottom << ".." << bb.top << ")";
                 else
-                    stream << "BoundingCircle(";
-                    stream << bb.origin;
-                    stream << ", " << bb.radius << ")";
+                    stream << "BoundingCircle(" << bb.origin << ", " << bb.radius << ")";
                 return stream;
             }
         };

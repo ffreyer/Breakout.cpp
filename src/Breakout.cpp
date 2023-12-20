@@ -2,13 +2,14 @@
 
 float randf() { return (float) std::rand() / (float) RAND_MAX; }
 
-Breakout::Breakout() {
-    if (init("Test Window", 800, 600)) {
-        std::srand(glfwGetTime());
-        m_scene.init();
-        m_physics.init(m_scene.get_registry());
-        reset();
-    }
+Breakout::Breakout(Window* window)
+    : SubApp(window) 
+{
+    m_name = "Breakout";
+    std::srand(glfwGetTime());
+    m_scene.init();
+    m_physics.init(m_scene.get_registry());
+    reset();
 }
 
 void Breakout::update(float delta_time) {

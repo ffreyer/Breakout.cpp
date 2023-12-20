@@ -20,7 +20,7 @@ namespace Component {
     struct Paddle {};
 }
 
-class Breakout : public Application {
+class Breakout : public SubApp {
 private:
     Scene2D m_scene;
     Physics2D m_physics;
@@ -31,7 +31,7 @@ public:
     Entity m_paddle;
     int m_ball_count = 0;
 
-    Breakout();
+    Breakout(Window* window);
 
     void update(float delta_time) override;
     void on_event(AbstractEvent& event) override;

@@ -9,16 +9,15 @@
 #include "core/Application.hpp"
 #include "core/logging.hpp"
 
-class Example3D : public Application {
+class Example3D : public SubApp {
 private:
     Scene3D m_scene;
 
 public:
-    Example3D() {
-        if (init("Test Window", 800, 600)) {
-            m_scene.init(get_window());
-        }
-    }
+    Example3D(Window* window) : SubApp(window) {
+        m_scene.init(get_window());
+        m_name = "3D Example";
+    };
 
     void update(float delta_time) override {
         m_scene.update(delta_time);
@@ -28,5 +27,4 @@ public:
     void on_event(AbstractEvent& event) override {
         m_scene.on_event(event);
     };
-
 };

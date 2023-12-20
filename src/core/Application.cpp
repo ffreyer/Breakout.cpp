@@ -63,21 +63,21 @@ void Application::run() {
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
             ImGui::Begin("Examples");
-            {
-                static int tab = 0;
-                if (ImGui::Button("Example 1", ImVec2(100, 25)))
-                    tab = 0;
-
-                if (ImGui::Button("Example 2", ImVec2(100, 25)))
-                    tab = 1;
-
-                if (ImGui::Button("Example 3", ImVec2(100, 25)))
-                    tab = 2;
+            
+            for (uint32_t i = 0; i < m_apps.size(); i++) {
+                SubApp* app = m_apps[i].get();
+                if (ImGui::Button(app->m_name.c_str(), ImVec2(100, 25))) {
+                    m_current_app = i;
+                    app->m_running = true;
+                } else {
+                    app->m_running = false;
+                }
             }
             ImGui::End();
         }
 
-        update(delta_time);
+        if (m_current_app < m_apps.size())
+            m_apps[m_current_app]->update(delta_time);
 
         {
             ImGui::Render();
@@ -86,10 +86,35 @@ void Application::run() {
 
         m_window->swap_buffers();
 
-        if (m_window->should_close())
+        if (m_window->should_close()) {
             m_running = false;
+            for (uint32_t j = 0; j < m_apps.size(); j++)
+                m_apps[j]->m_running = false;
+        }
     }
 };
+
+void Application::on_event(AbstractEvent& event) {
+    // TODO: maybe reorganize this away?
+    ImGuiIO& io = ImGui::GetIO();
+    bool handled = false;
+    switch (event.type) {
+    case EventType::MouseButtonPressed:
+    case EventType::MouseButtonReleased:
+    case EventType::MouseMoved:
+    case EventType::MouseScrolled:
+        handled |= io.WantCaptureMouse;
+        break;
+    case EventType::KeyPressed:
+    case EventType::KeyReleased:
+    case EventType::KeyTyped:
+        handled |= io.WantCaptureKeyboard;
+        break;
+    }
+
+    if (!handled && (m_apps.size() > m_current_app))
+        m_apps[m_current_app]->on_event(event);
+}
 
 bool Window::connect_events(Application* app) {
     m_app = app;
@@ -109,7 +134,7 @@ bool Window::connect_events(Application* app) {
             else if (action == GLFW_RELEASE)
                 event.type = EventType::KeyReleased;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         // Mouse Button
@@ -125,7 +150,7 @@ bool Window::connect_events(Application* app) {
             else if (action == GLFW_KEY_UP)
                 event.type = EventType::MouseButtonReleased;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         // Mouse Position
@@ -139,7 +164,7 @@ bool Window::connect_events(Application* app) {
             event.position = win->m_mouse_position;
             event.delta = event.position - event.last_position;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         // Scroll
@@ -150,7 +175,7 @@ bool Window::connect_events(Application* app) {
             event.type = EventType::MouseScrolled;
             event.scroll = glm::vec2(dx, dy);
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int x, int y){
@@ -162,7 +187,7 @@ bool Window::connect_events(Application* app) {
             win->m_window_position = glm::ivec2(x, y);
             event.position = win->m_window_position;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int x, int y){
@@ -174,7 +199,7 @@ bool Window::connect_events(Application* app) {
             win->m_window_size = glm::ivec2(x, y);
             event.size = win->m_window_size;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window){
@@ -183,7 +208,7 @@ bool Window::connect_events(Application* app) {
             WindowEvent event;
             event.type = EventType::WindowClose;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         glfwSetWindowFocusCallback(m_window, [](GLFWwindow* window, int focused){
@@ -195,32 +220,10 @@ bool Window::connect_events(Application* app) {
             else
                 event.type = EventType::WindowLostFocus;
 
-            win->m_app->dispatch_event(event);
+            win->m_app->on_event(event);
         });
 
         return true;
     }
     return false;
-}
-
-void Application::dispatch_event(AbstractEvent& event) {
-    // TODO: maybe reorganize this away?
-    ImGuiIO& io = ImGui::GetIO();
-    bool handled = false;
-    switch (event.type) {
-    case EventType::MouseButtonPressed:
-    case EventType::MouseButtonReleased:
-    case EventType::MouseMoved:
-    case EventType::MouseScrolled:
-        handled |= io.WantCaptureMouse;
-        break;
-    case EventType::KeyPressed:
-    case EventType::KeyReleased:
-    case EventType::KeyTyped:
-        handled |= io.WantCaptureKeyboard;
-        break;
-    }
-
-    if (!handled)
-        on_event(event);
 }

@@ -36,6 +36,6 @@ public:
     bool is_key_pressed(KeyCode key) { return m_window->is_key_pressed(key); }
     bool is_mouse_button_pressed(MouseCode button) { return m_window->is_mouse_button_pressed(button); }
 
-// private:
-    // process_events();
+    // this is only public because it needs to be callable in a lambda
+    void dispatch_event(AbstractEvent& event);
 };

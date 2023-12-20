@@ -25,7 +25,7 @@ bool Application::init(const char* name, int width, int height) {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
+        
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(m_window->m_window, true);
         ImGui_ImplOpenGL3_Init();
@@ -51,7 +51,6 @@ void Application::run() {
 
     m_running = true;
     while (m_running) {
-        // TODO:
         // handle events
         m_window->poll_events();
 
@@ -59,15 +58,31 @@ void Application::run() {
         last_time = glfwGetTime();
 
         // imgui
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+        {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Examples");
+            {
+                static int tab = 0;
+                if (ImGui::Button("Example 1", ImVec2(100, 25)))
+                    tab = 0;
+
+                if (ImGui::Button("Example 2", ImVec2(100, 25)))
+                    tab = 1;
+
+                if (ImGui::Button("Example 3", ImVec2(100, 25)))
+                    tab = 2;
+            }
+            ImGui::End();
+        }
 
         update(delta_time);
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        {
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
 
         m_window->swap_buffers();
 
@@ -94,7 +109,7 @@ bool Window::connect_events(Application* app) {
             else if (action == GLFW_RELEASE)
                 event.type = EventType::KeyReleased;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         // Mouse Button
@@ -110,7 +125,7 @@ bool Window::connect_events(Application* app) {
             else if (action == GLFW_KEY_UP)
                 event.type = EventType::MouseButtonReleased;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         // Mouse Position
@@ -124,7 +139,7 @@ bool Window::connect_events(Application* app) {
             event.position = win->m_mouse_position;
             event.delta = event.position - event.last_position;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         // Scroll
@@ -135,7 +150,7 @@ bool Window::connect_events(Application* app) {
             event.type = EventType::MouseScrolled;
             event.scroll = glm::vec2(dx, dy);
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int x, int y){
@@ -147,7 +162,7 @@ bool Window::connect_events(Application* app) {
             win->m_window_position = glm::ivec2(x, y);
             event.position = win->m_window_position;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int x, int y){
@@ -159,7 +174,7 @@ bool Window::connect_events(Application* app) {
             win->m_window_size = glm::ivec2(x, y);
             event.size = win->m_window_size;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window){
@@ -168,7 +183,7 @@ bool Window::connect_events(Application* app) {
             WindowEvent event;
             event.type = EventType::WindowClose;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         glfwSetWindowFocusCallback(m_window, [](GLFWwindow* window, int focused){
@@ -180,10 +195,32 @@ bool Window::connect_events(Application* app) {
             else
                 event.type = EventType::WindowLostFocus;
 
-            win->m_app->on_event(event);
+            win->m_app->dispatch_event(event);
         });
 
         return true;
     }
     return false;
+}
+
+void Application::dispatch_event(AbstractEvent& event) {
+    // TODO: maybe reorganize this away?
+    ImGuiIO& io = ImGui::GetIO();
+    bool handled = false;
+    switch (event.type) {
+    case EventType::MouseButtonPressed:
+    case EventType::MouseButtonReleased:
+    case EventType::MouseMoved:
+    case EventType::MouseScrolled:
+        handled |= io.WantCaptureMouse;
+        break;
+    case EventType::KeyPressed:
+    case EventType::KeyReleased:
+    case EventType::KeyTyped:
+        handled |= io.WantCaptureKeyboard;
+        break;
+    }
+
+    if (!handled)
+        on_event(event);
 }

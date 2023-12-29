@@ -10,6 +10,7 @@
 
 #include "renderer/MeshRenderer.hpp"
 #include "renderer/VoxelRenderer.hpp"
+#include "renderer/VoxelRenderer2.hpp"
 #include "renderer/Skybox.hpp"
 
 #include "camera/FirstPersonCamera.hpp"
@@ -37,6 +38,7 @@ private:
     std::unique_ptr<SkyBox> skybox = nullptr;
     MeshRenderer m_mesh_renderer;
     VoxelRenderer m_voxel_renderer;
+    VoxelRenderer2 m_voxel_renderer2;
 
     // TODO: move into new structure/class
     std::unique_ptr<GLFramebuffer> m_framebuffer = nullptr;
@@ -56,6 +58,7 @@ public:
         m_window = window;
         m_mesh_renderer.init();
         m_voxel_renderer.init();
+        m_voxel_renderer2.init();
 
         // Sample Cube
         Entity cube = create_entity("Sample Cube");
@@ -73,8 +76,10 @@ public:
         transform.position = glm::vec3(-8.0f, -24.0f, -8.0f);
 
         // cam
-        m_camera.eyeposition(glm::vec3(3.0f, 0.0, 0.0f));
+        m_camera.eyeposition(glm::vec3(50.0f, 10.0f, 50.0f));
         m_camera.lookat(glm::vec3(0.0f));
+        m_camera.m_far = 1000.0f;
+        m_camera.recalculate_projection();
 
         // Skybox
         skybox = std::make_unique<SkyBox>(std::array<std::string, 6>({
@@ -119,6 +124,12 @@ public:
         m_shadow_camera.near(0.1f);
         m_shadow_camera.far(10.0f);
         m_shadow_camera.recalculate_projection();
+
+        // Voxel world
+        Entity world = create_entity("Sample World");
+        world.add<Component::VoxelWorld>(glm::ivec3(1024, 128, 1024));
+        // world.add<Component::VoxelWorld>(glm::ivec3(512, 100, 512));
+        m_voxel_renderer2.update_world(world.get<Component::VoxelWorld>());
     }
 
     void on_event(AbstractEvent& event) {
@@ -137,7 +148,7 @@ public:
         }
 
         // camera motion (keyboard)
-        float step = 3.0f * delta_time;
+        float step = 30.0f * delta_time;
         if (m_window->is_key_pressed(Key::W))  m_camera.dolly( step);
         if (m_window->is_key_pressed(Key::S))  m_camera.dolly(-step);
         if (m_window->is_key_pressed(Key::A))  m_camera.truck(-step);
@@ -149,6 +160,7 @@ public:
     }
 
     void render() {
+        /*
         // TODO: lighting variables
         glm::vec3 light_direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0));
         m_camera.recalculate_view();
@@ -217,6 +229,24 @@ public:
             for (entt::entity e : view)
                 m_voxel_renderer.render(Entity(m_registry, e));
             m_voxel_renderer.end();
+        }
+
+        */
+
+        {
+            m_camera.recalculate_view();
+
+            glm::ivec2 window_size = m_window->get_window_size();
+            glViewport(0, 0, window_size.x, window_size.y);
+            glClearColor(0.2f, 0.3f, 0.3f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);
+            auto view = m_registry.view<Component::VoxelWorld>();
+
+            m_voxel_renderer2.begin(m_camera.m_projectionview, m_camera.eyeposition());
+            for (entt::entity e : view)
+                m_voxel_renderer2.render(Entity(m_registry, e));
+            m_voxel_renderer2.end();
         }
 
         skybox->render(m_camera.m_view, m_camera.m_projection);

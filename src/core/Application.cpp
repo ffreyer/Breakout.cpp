@@ -17,6 +17,7 @@ bool Application::init(const char* name, int width, int height) {
     m_window = new Window(name, width, height);
     if (m_window->init()) {
         m_window->connect_events(this);
+        m_window->set_vsync(false);
 
         // imgui
         IMGUI_CHECKVERSION();
@@ -29,6 +30,12 @@ bool Application::init(const char* name, int width, int height) {
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(m_window->m_window, true);
         ImGui_ImplOpenGL3_Init();
+
+        // Setup Metrics
+        m_stats.push_back(OnlineStatistics());
+        m_stats.push_back(OnlineStatistics());
+        m_stats.push_back(OnlineStatistics());
+        m_stats.push_back(OnlineStatistics());
 
         return true;
     }
@@ -47,18 +54,26 @@ void Application::run() {
     }
 
     double last_time = glfwGetTime();
+    double frame_time, temp_time, imgui_delta_time;
     float delta_time;
+    char buffer[128];
 
     m_running = true;
     while (m_running) {
+        frame_time = glfwGetTime();
+        
+        temp_time = glfwGetTime();
         // handle events
         m_window->poll_events();
+        // polling time stats
+        m_stats[1].push(glfwGetTime() - temp_time);
 
         delta_time = (float)(glfwGetTime() - last_time);
         last_time = glfwGetTime();
 
         // imgui
         {
+            temp_time = glfwGetTime();
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
@@ -74,14 +89,33 @@ void Application::run() {
                 }
             }
             ImGui::End();
+
+            ImGui::Begin("Frame Statistics");
+            sprintf_s(buffer, "Frame: %0.1f fps", 1.0f / m_stats[0].mean());
+            ImGui::Text(buffer);
+            sprintf_s(buffer, "Frame: %0.3fms", 1000.0f * m_stats[0].mean());
+            ImGui::Text(buffer);
+            sprintf_s(buffer, "Poll:  %0.3fms", 1000.0f * m_stats[1].mean());
+            ImGui::Text(buffer);
+            sprintf_s(buffer, "Main:  %0.3fms", 1000.0f * m_stats[2].mean());
+            ImGui::Text(buffer);
+            sprintf_s(buffer, "ImGui: %0.3fms", 1000.0f * m_stats[3].mean());
+            ImGui::Text(buffer);
+            ImGui::End();
+
+            imgui_delta_time = glfwGetTime() - temp_time;
         }
 
+        temp_time = glfwGetTime();
         if (m_current_app < m_apps.size())
             m_apps[m_current_app]->update(delta_time);
+        m_stats[2].push(glfwGetTime() - temp_time);
 
         {
+            temp_time = glfwGetTime();
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            m_stats[3].push(glfwGetTime() - temp_time + imgui_delta_time);
         }
 
         m_window->swap_buffers();
@@ -91,6 +125,7 @@ void Application::run() {
             for (uint32_t j = 0; j < m_apps.size(); j++)
                 m_apps[j]->m_running = false;
         }
+        m_stats[0].push(glfwGetTime() - frame_time);
     }
 };
 

@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/src/**",
-                "${workspaceFolder}/dependencies/**"
+                "${workspaceFolder}/dependencies/**",
+                "${workspaceFolder}/dependencies/stb/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",
@@ -15,7 +16,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/dependencies/**"
+                "${workspaceFolder}/dependencies/**",
+                "${workspaceFolder}/dependencies/stb/**"
             ],
             "defines": [],
             "compilerPath": "C:\\Program Files\\LLVM\\bin\\clang++.exe",

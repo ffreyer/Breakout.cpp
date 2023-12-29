@@ -57,6 +57,7 @@ namespace Component {
     struct VoxelWorld {
         uint8_t* data = nullptr;
         glm::ivec3 size;
+        bool needs_update = true;
 
         VoxelWorld(uint8_t* _data, glm::ivec3 _size) 
             : data(_data), size(_size)
@@ -148,6 +149,8 @@ public:
 
     void render(Entity e) const {
         auto& world = e.get<Component::VoxelWorld>();
+        if (world.needs_update)
+            update_world(world);
 
         for (int dim : {1, 0, 2}) {
             render_data.va->update(0, get_quad(world.size, dim), 4 * 3 * sizeof(float));
@@ -161,12 +164,13 @@ public:
         render_data.block_id->unbind();
     };
 
-    void update_world(Component::VoxelWorld& world) {
+    void update_world(Component::VoxelWorld& world) const {
         // TODO: lazy local updates from component?
         render_data.block_id->set_data(
             world.data, GLTexture::RED_INTEGER, 
             world.size.x, world.size.y, world.size.z
         );
+        world.needs_update = false;
     }
 
     // void begin_shadow(glm::mat4& projectionview) const;

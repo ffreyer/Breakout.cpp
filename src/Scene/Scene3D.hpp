@@ -60,26 +60,9 @@ public:
         m_voxel_renderer.init();
         m_voxel_renderer2.init();
 
-        // Sample Cube
-        Entity cube = create_entity("Sample Cube");
-        m_mesh_renderer.add_cube_mesh(cube);
-        cube.add<Component::Transform>();
-        cube.get<Component::Transform>().scale_by(glm::vec3(0.5f));
-        cube.add<Component::SimpleTexture2D>("../assets/wood_container.jpg");
-
-        // Sample Voxel Chunk
-        Entity chunk = create_entity("Sample Chunk");
-        chunk.add<Component::Chunk>(Component::Chunk::sample_data());
-        chunk.add<Component::Transform>();
-        auto& transform = chunk.get<Component::Transform>();
-        transform.scale = glm::vec3(1.0f / (float) Component::Chunk::LENGTH);
-        transform.position = glm::vec3(-8.0f, -24.0f, -8.0f);
-
         // cam
-        m_camera.eyeposition(glm::vec3(50.0f, 10.0f, 50.0f));
+        m_camera.eyeposition(glm::vec3(3.0f, 0.0f, 0.0f));
         m_camera.lookat(glm::vec3(0.0f));
-        m_camera.m_far = 1000.0f;
-        m_camera.recalculate_projection();
 
         // Skybox
         skybox = std::make_unique<SkyBox>(std::array<std::string, 6>({
@@ -124,12 +107,10 @@ public:
         m_shadow_camera.near(0.1f);
         m_shadow_camera.far(10.0f);
         m_shadow_camera.recalculate_projection();
+    }
 
-        // Voxel world
-        Entity world = create_entity("Sample World");
-        world.add<Component::VoxelWorld>(glm::ivec3(1024, 128, 1024));
-        // world.add<Component::VoxelWorld>(glm::ivec3(512, 100, 512));
-        m_voxel_renderer2.update_world(world.get<Component::VoxelWorld>());
+    FirstPersonCamera& get_camera() {
+        return m_camera;
     }
 
     void on_event(AbstractEvent& event) {
@@ -160,7 +141,6 @@ public:
     }
 
     void render() {
-        /*
         // TODO: lighting variables
         glm::vec3 light_direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0));
         m_camera.recalculate_view();
@@ -231,16 +211,7 @@ public:
             m_voxel_renderer.end();
         }
 
-        */
-
         {
-            m_camera.recalculate_view();
-
-            glm::ivec2 window_size = m_window->get_window_size();
-            glViewport(0, 0, window_size.x, window_size.y);
-            glClearColor(0.2f, 0.3f, 0.3f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glEnable(GL_DEPTH_TEST);
             auto view = m_registry.view<Component::VoxelWorld>();
 
             m_voxel_renderer2.begin(m_camera.m_projectionview, m_camera.eyeposition());

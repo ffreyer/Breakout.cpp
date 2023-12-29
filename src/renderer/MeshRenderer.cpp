@@ -38,62 +38,6 @@ void MeshRenderer::init() {
     m_shadow_shader->compile();
 }
 
-void MeshRenderer::add_cube_mesh(Entity& cube) const {
-    static std::vector<float> vertices = {
-        // back
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f,
-
-        // front
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
-
-        // left
-        -0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-
-        // right
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-
-        // bottom
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f, 0.0f,  1.0f, 1.0f,
-
-        // top
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f,
-    };
-    static std::vector<uint32_t> indices = {
-        0, 1, 2, 1, 2, 3, // back
-        4, 5, 6, 5, 6, 7, // front
-        8, 9, 10, 9, 10, 11, // left
-        12, 13, 14, 13, 14, 15, // right
-        16, 17, 18, 17, 18, 19, // bottom
-        20, 21, 22, 21, 22, 23  // top
-    };
-    static GLBufferLayout layout = GLBufferLayout({
-        GLBufferElement("Position", GLType::Float3),
-        GLBufferElement("Normal", GLType::Float3),
-        GLBufferElement("Texture Coordinates", GLType::Float2),
-    });
-
-    cube.add<Component::SimpleMesh>(indices, vertices, layout);
-    // cube.add<Component::SimpleTexture2D>("../assets/wood_container.jpg");
-}
-
 void MeshRenderer::begin(glm::mat4& projectionview) const {
     m_shader->bind();
     m_shader->set_uniform("projectionview", projectionview);
